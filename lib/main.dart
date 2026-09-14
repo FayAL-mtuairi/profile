@@ -70,9 +70,76 @@ _Project('Library Database Schema','Web & Database','Database Design','A databas
 
 class _Project{final String title,category,type,description;final List<String> tags,images;const _Project(this.title,this.category,this.type,this.description,this.tags,this.images);}
 
-class _ProjectCard extends StatelessWidget{final _Project p;const _ProjectCard(this.p);@override Widget build(BuildContext c){final cover=p.images.isNotEmpty?p.images.first:null;return InkWell(onTap:()=>Navigator.of(c).push(MaterialPageRoute(builder:(_)=>_ProjectDetails(p))),child:Container(decoration:BoxDecoration(color:const Color(0xFFE9E1D6),border:Border.all(color:const Color(0xFFBDB4A8))),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[if(cover!=null)AspectRatio(aspectRatio:16/9,child:Image.asset(cover,fit:BoxFit.cover,alignment:Alignment.center)),Padding(padding:const EdgeInsets.all(22),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(p.category.toUpperCase(),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.4)),const SizedBox(height:14),Text(p.title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w900)),const SizedBox(height:6),Text(p.type,style:const TextStyle(color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),const SizedBox(height:18),const Row(children:[Text('View project',style:TextStyle(fontWeight:FontWeight.w700)),SizedBox(width:6),Icon(Icons.arrow_forward,size:17)])]))]));}}
+class _ProjectCard extends StatelessWidget{
+  final _Project p;
+  const _ProjectCard(this.p);
+  @override
+  Widget build(BuildContext c){
+    final cover=p.images.isNotEmpty?p.images.first:null;
+    return InkWell(
+      onTap:()=>Navigator.of(c).push(MaterialPageRoute(builder:(_)=>_ProjectDetails(p))),
+      child:Container(
+        decoration:BoxDecoration(color:const Color(0xFFE9E1D6),border:Border.all(color:const Color(0xFFBDB4A8))),
+        child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+          if(cover!=null)AspectRatio(aspectRatio:16/9,child:Image.asset(cover,fit:BoxFit.cover,alignment:Alignment.center)),
+          Padding(
+            padding:const EdgeInsets.all(22),
+            child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+              Text(p.category.toUpperCase(),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.4)),
+              const SizedBox(height:14),
+              Text(p.title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w900)),
+              const SizedBox(height:6),
+              Text(p.type,style:const TextStyle(color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),
+              const SizedBox(height:18),
+              const Row(children:[Text('View project',style:TextStyle(fontWeight:FontWeight.w700)),SizedBox(width:6),Icon(Icons.arrow_forward,size:17)]),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+}
 
-class _ProjectDetails extends StatelessWidget{final _Project p;const _ProjectDetails(this.p);@override Widget build(BuildContext c){return Scaffold(backgroundColor:const Color(0xFFF4EFE7),appBar:AppBar(backgroundColor:const Color(0xFFF4EFE7),surfaceTintColor:Colors.transparent,title:Text(p.title,style:const TextStyle(fontWeight:FontWeight.w800))),body:SingleChildScrollView(child:Center(child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:1080),child:Padding(padding:const EdgeInsets.fromLTRB(24,36,24,70),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(p.category.toUpperCase(),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w800,letterSpacing:1.8)),const SizedBox(height:12),Text(p.title,style:const TextStyle(fontSize:48,height:1,fontWeight:FontWeight.w900,letterSpacing:-1.5)),const SizedBox(height:10),Text(p.type,style:const TextStyle(fontSize:17,color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),const SizedBox(height:28),Text(p.description,style:const TextStyle(fontSize:18,height:1.75,color:Color(0xFF413C36))),const SizedBox(height:24),Wrap(spacing:8,runSpacing:8,children:p.tags.map((e)=>_Tag(e)).toList()),if(p.images.isNotEmpty)...[const SizedBox(height:42),const Divider(),const SizedBox(height:22),const Text('Project Gallery',style:TextStyle(fontSize:24,fontWeight:FontWeight.w900)),const SizedBox(height:20),_DetailsGallery(p.images)]])))));}}
+class _ProjectDetails extends StatelessWidget{
+  final _Project p;
+  const _ProjectDetails(this.p);
+  @override
+  Widget build(BuildContext c){
+    return Scaffold(
+      backgroundColor:const Color(0xFFF4EFE7),
+      appBar:AppBar(backgroundColor:const Color(0xFFF4EFE7),surfaceTintColor:Colors.transparent,title:Text(p.title,style:const TextStyle(fontWeight:FontWeight.w800))),
+      body:SingleChildScrollView(
+        child:Center(
+          child:ConstrainedBox(
+            constraints:const BoxConstraints(maxWidth:1080),
+            child:Padding(
+              padding:const EdgeInsets.fromLTRB(24,36,24,70),
+              child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                Text(p.category.toUpperCase(),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w800,letterSpacing:1.8)),
+                const SizedBox(height:12),
+                Text(p.title,style:const TextStyle(fontSize:48,height:1,fontWeight:FontWeight.w900,letterSpacing:-1.5)),
+                const SizedBox(height:10),
+                Text(p.type,style:const TextStyle(fontSize:17,color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),
+                const SizedBox(height:28),
+                Text(p.description,style:const TextStyle(fontSize:18,height:1.75,color:Color(0xFF413C36))),
+                const SizedBox(height:24),
+                Wrap(spacing:8,runSpacing:8,children:p.tags.map((e)=>_Tag(e)).toList()),
+                if(p.images.isNotEmpty)...[
+                  const SizedBox(height:42),
+                  const Divider(),
+                  const SizedBox(height:22),
+                  const Text('Project Gallery',style:TextStyle(fontSize:24,fontWeight:FontWeight.w900)),
+                  const SizedBox(height:20),
+                  _DetailsGallery(p.images),
+                ],
+              ]),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _DetailsGallery extends StatelessWidget{final List<String> images;const _DetailsGallery(this.images);@override Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){if(images.length==1)return Container(width:double.infinity,color:Colors.white,padding:const EdgeInsets.all(14),child:Image.asset(images.first,fit:BoxFit.contain));final mobile=x.maxWidth<700;final w=mobile?x.maxWidth:(x.maxWidth-18)/2;return Wrap(spacing:18,runSpacing:18,children:images.map((img)=>Container(width:w,height:mobile?360:320,color:Colors.white,padding:const EdgeInsets.all(12),child:Image.asset(img,fit:BoxFit.contain))).toList());});}
 
