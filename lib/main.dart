@@ -33,7 +33,7 @@ class _PortfolioPageState extends State<PortfolioPage>{
         _Section(key:skills,n:'04',title:'Skills',child:const _Skills()),
         _Section(key:contact,n:'05',title:'Contact',child:const _Contact()),
         const Divider(),const Padding(padding:EdgeInsets.symmetric(vertical:26),child:Text('Fay Al-Mutairi  •  Information Technology  •  Saudi Arabia'))
-      ]))))
+      ])))))
     ]));
   }
 }
