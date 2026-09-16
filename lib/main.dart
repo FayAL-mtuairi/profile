@@ -19,8 +19,7 @@ class FayPortfolio extends StatelessWidget{
 
 class PortfolioPage extends StatefulWidget{
   const PortfolioPage({super.key});
-  @override
-  State<PortfolioPage> createState()=>_PortfolioPageState();
+  @override State<PortfolioPage> createState()=>_PortfolioPageState();
 }
 
 class _PortfolioPageState extends State<PortfolioPage>{
@@ -28,7 +27,9 @@ class _PortfolioPageState extends State<PortfolioPage>{
 
   void go(GlobalKey k){
     final c=k.currentContext;
-    if(c!=null)Scrollable.ensureVisible(c,duration:const Duration(milliseconds:520),curve:Curves.easeOutCubic);
+    if(c!=null){
+      Scrollable.ensureVisible(c,duration:const Duration(milliseconds:520),curve:Curves.easeOutCubic);
+    }
   }
 
   @override
@@ -130,8 +131,7 @@ class _Nav extends StatelessWidget{final String t;final VoidCallback f;const _Na
 class _Hero extends StatelessWidget{
   final VoidCallback onWork;
   const _Hero({required this.onWork});
-  @override
-  Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){
+  @override Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){
     final s=x.maxWidth<780;
     final text=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
       const Row(children:[Icon(Icons.code_rounded,size:16),SizedBox(width:8),Text('INFORMATION TECHNOLOGY',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,letterSpacing:2.2))]),
@@ -140,7 +140,12 @@ class _Hero extends StatelessWidget{
       const SizedBox(height:24),
       const Text('IT graduate focused on data analytics, Flutter development and practical AI. My work combines hands-on training with projects built around real interfaces, datasets, APIs and software solutions.',style:TextStyle(fontSize:18,height:1.6,color:Color(0xFF504A43))),
       const SizedBox(height:28),
-      FilledButton.icon(onPressed:onWork,icon:const Icon(Icons.arrow_downward_rounded,size:18),label:const Text('View my work'),style:FilledButton.styleFrom(backgroundColor:const Color(0xFF171717),padding:const EdgeInsets.symmetric(horizontal:24,vertical:17),shape:const RoundedRectangleBorder())),
+      FilledButton.icon(
+        onPressed:onWork,
+        icon:const Icon(Icons.arrow_downward_rounded,size:18),
+        label:const Text('View my work'),
+        style:FilledButton.styleFrom(backgroundColor:const Color(0xFF171717),padding:const EdgeInsets.symmetric(horizontal:24,vertical:17),shape:const RoundedRectangleBorder()),
+      ),
     ]);
     final image=Container(height:s?350:480,decoration:BoxDecoration(border:Border.all(color:const Color(0xFF171717))),child:Image.asset('assets/IMG_6645.PNG',fit:BoxFit.cover));
     return s?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:38),image]):Row(children:[Expanded(flex:6,child:text),const SizedBox(width:55),Expanded(flex:4,child:image)]);
@@ -194,7 +199,7 @@ class _ProjectsState extends State<_Projects>{
       const SizedBox(height:18),
       Wrap(spacing:9,runSpacing:9,children:filters.map((e)=>ChoiceChip(label:Text(e),selected:filter==e,onSelected:(_)=>setState(()=>filter=e),selectedColor:const Color(0xFF171717),labelStyle:TextStyle(color:filter==e?Colors.white:const Color(0xFF171717)))).toList()),
       const SizedBox(height:30),
-      LayoutBuilder(builder:(c,x){final w=x.maxWidth<700?x.maxWidth:(x.maxWidth-20)/2;return Wrap(spacing:20,runSpacing:20,children:shown.asMap().entries.map((entry)=>SizedBox(width:w,child:_HoverLift(child:_ProjectCard(entry.value)))).toList());}),
+      LayoutBuilder(builder:(c,x){final w=x.maxWidth<700?x.maxWidth:(x.maxWidth-20)/2;return Wrap(spacing:20,runSpacing:20,children:shown.map((p)=>SizedBox(width:w,child:_HoverLift(child:_ProjectCard(p)))).toList());}),
     ]);
   }
 }
@@ -203,10 +208,55 @@ class _HoverLift extends StatefulWidget{final Widget child;const _HoverLift({req
 class _HoverLiftState extends State<_HoverLift>{bool hover=false;@override Widget build(BuildContext c)=>MouseRegion(onEnter:(_)=>setState(()=>hover=true),onExit:(_)=>setState(()=>hover=false),child:AnimatedContainer(duration:const Duration(milliseconds:180),transform:Matrix4.translationValues(0,hover?-6:0,0),decoration:BoxDecoration(boxShadow:hover?const [BoxShadow(color:Color(0x18000000),blurRadius:24,offset:Offset(0,12))]:const []),child:widget.child));}
 
 class _Project{final String title,category,type,description;final List<String> tags,images;const _Project(this.title,this.category,this.type,this.description,this.tags,this.images);}
-class _ProjectCard extends StatelessWidget{final _Project p;const _ProjectCard(this.p);@override Widget build(BuildContext c){final cover=p.images.isNotEmpty?p.images.first:null;return Material(color:const Color(0xFFE9E1D6),child:InkWell(onTap:()=>Navigator.of(c).push(MaterialPageRoute(builder:(_)=>_ProjectDetails(p))),child:Container(decoration:BoxDecoration(border:Border.all(color:const Color(0xFFBDB4A8))),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[if(cover!=null)Container(height:185,width:double.infinity,color:const Color(0xFFF8F5F0),padding:const EdgeInsets.all(14),child:Image.asset(cover,fit:BoxFit.contain)),Padding(padding:const EdgeInsets.all(22),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[const Icon(Icons.folder_open_outlined,size:16),const SizedBox(width:7),Text(p.category.toUpperCase(),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.4))]),const SizedBox(height:12),Text(p.title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w900)),const SizedBox(height:6),Text(p.type,style:const TextStyle(color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),const SizedBox(height:16),const Row(children:[Text('View project',style:TextStyle(fontWeight:FontWeight.w700)),SizedBox(width:6),Icon(Icons.arrow_forward,size:17)])]))])))));}}
+class _ProjectCard extends StatelessWidget{
+  final _Project p;
+  const _ProjectCard(this.p);
+  @override
+  Widget build(BuildContext c){
+    final cover=p.images.isNotEmpty?p.images.first:null;
+    return Material(
+      color:const Color(0xFFE9E1D6),
+      child:InkWell(
+        onTap:()=>Navigator.of(c).push(MaterialPageRoute(builder:(_)=>_ProjectDetails(p))),
+        child:Container(
+          decoration:BoxDecoration(border:Border.all(color:const Color(0xFFBDB4A8))),
+          child:Column(
+            crossAxisAlignment:CrossAxisAlignment.start,
+            children:[
+              if(cover!=null)
+                Container(
+                  height:185,
+                  width:double.infinity,
+                  color:const Color(0xFFF8F5F0),
+                  padding:const EdgeInsets.all(14),
+                  child:Image.asset(cover,fit:BoxFit.contain),
+                ),
+              Padding(
+                padding:const EdgeInsets.all(22),
+                child:Column(
+                  crossAxisAlignment:CrossAxisAlignment.start,
+                  children:[
+                    Row(children:[const Icon(Icons.folder_open_outlined,size:16),const SizedBox(width:7),Text(p.category.toUpperCase(),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.4))]),
+                    const SizedBox(height:12),
+                    Text(p.title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w900)),
+                    const SizedBox(height:6),
+                    Text(p.type,style:const TextStyle(color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),
+                    const SizedBox(height:16),
+                    const Row(children:[Text('View project',style:TextStyle(fontWeight:FontWeight.w700)),SizedBox(width:6),Icon(Icons.arrow_forward,size:17)]),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _ProjectDetails extends StatefulWidget{final _Project p;const _ProjectDetails(this.p);@override State<_ProjectDetails> createState()=>_ProjectDetailsState();}
 class _ProjectDetailsState extends State<_ProjectDetails>{late final PageController pc;int current=0;@override void initState(){super.initState();pc=PageController(viewportFraction:.7);}@override void dispose(){pc.dispose();super.dispose();}@override Widget build(BuildContext c){final p=widget.p;final phone=p.images.length>1&&(p.title=='Anees'||p.title=='Real Estate App'||p.title=='Kharja');return Scaffold(backgroundColor:const Color(0xFFF4EFE7),appBar:AppBar(backgroundColor:const Color(0xFFF4EFE7),surfaceTintColor:Colors.transparent,title:Text(p.title,style:const TextStyle(fontWeight:FontWeight.w800))),body:SingleChildScrollView(child:Center(child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:1040),child:Padding(padding:const EdgeInsets.fromLTRB(24,36,24,70),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(p.category.toUpperCase(),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w800,letterSpacing:1.8)),const SizedBox(height:12),Text(p.title,style:const TextStyle(fontSize:48,height:1,fontWeight:FontWeight.w900,letterSpacing:-1.5)),const SizedBox(height:10),Text(p.type,style:const TextStyle(fontSize:17,color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),const SizedBox(height:28),Text(p.description,style:const TextStyle(fontSize:18,height:1.75,color:Color(0xFF413C36))),const SizedBox(height:24),Wrap(spacing:8,runSpacing:8,children:p.tags.map((e)=>_Tag(e)).toList()),if(p.images.isNotEmpty)...[const SizedBox(height:42),const Divider(),const SizedBox(height:22),const Text('Project Gallery',style:TextStyle(fontSize:24,fontWeight:FontWeight.w900)),const SizedBox(height:18),phone?_PhoneCarousel(images:p.images,controller:pc,current:current,onChanged:(i)=>setState(()=>current=i)):_DetailsGallery(p.images)]]))))));}}
+
 class _PhoneCarousel extends StatelessWidget{final List<String> images;final PageController controller;final int current;final ValueChanged<int> onChanged;const _PhoneCarousel({required this.images,required this.controller,required this.current,required this.onChanged});@override Widget build(BuildContext c)=>Column(children:[SizedBox(height:520,child:PageView.builder(controller:controller,itemCount:images.length,onPageChanged:onChanged,physics:const BouncingScrollPhysics(),itemBuilder:(c,i){final active=i==current;return AnimatedScale(scale:active?1:.88,duration:const Duration(milliseconds:260),curve:Curves.easeOut,child:AnimatedOpacity(opacity:active?1:.55,duration:const Duration(milliseconds:260),child:Center(child:_PhoneFrame(image:images[i]))));})),const SizedBox(height:14),Row(mainAxisAlignment:MainAxisAlignment.center,children:List.generate(images.length,(i){final active=i==current;return AnimatedContainer(duration:const Duration(milliseconds:220),margin:const EdgeInsets.symmetric(horizontal:4),width:active?24:7,height:7,decoration:BoxDecoration(color:active?const Color(0xFF171717):const Color(0xFFBDB4A8),borderRadius:BorderRadius.circular(20)));}))]);}
 class _PhoneFrame extends StatelessWidget{final String image;const _PhoneFrame({required this.image});@override Widget build(BuildContext c)=>Container(width:245,height:500,padding:const EdgeInsets.all(9),decoration:BoxDecoration(color:const Color(0xFF151515),borderRadius:BorderRadius.circular(34),boxShadow:const [BoxShadow(blurRadius:22,offset:Offset(0,12),color:Color(0x22000000))]),child:Stack(children:[ClipRRect(borderRadius:BorderRadius.circular(26),child:Container(color:Colors.white,width:double.infinity,height:double.infinity,child:Image.asset(image,fit:BoxFit.contain))),Align(alignment:Alignment.topCenter,child:Container(width:78,height:18,margin:const EdgeInsets.only(top:7),decoration:BoxDecoration(color:const Color(0xFF151515),borderRadius:BorderRadius.circular(14))))]));}
 class _DetailsGallery extends StatelessWidget{final List<String> images;const _DetailsGallery(this.images);@override Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){if(images.length==1)return Center(child:ConstrainedBox(constraints:const BoxConstraints(maxHeight:520,maxWidth:900),child:Container(width:double.infinity,padding:const EdgeInsets.all(16),color:Colors.white,child:Image.asset(images.first,fit:BoxFit.contain))));final mobile=x.maxWidth<700;final w=mobile?x.maxWidth:(x.maxWidth-16)/2;return Wrap(spacing:16,runSpacing:16,children:images.map((img)=>Container(width:w,height:300,padding:const EdgeInsets.all(14),color:Colors.white,child:Image.asset(img,fit:BoxFit.contain))).toList());});}
