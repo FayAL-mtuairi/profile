@@ -262,8 +262,8 @@ class _HeroState extends State<_Hero>{
         ? Column(crossAxisAlignment:CrossAxisAlignment.start,children:[copy,const SizedBox(height:34),visual,const SizedBox(height:18),const Align(alignment:Alignment.center,child:_ScrollHint(compact:true))])
         : Row(crossAxisAlignment:CrossAxisAlignment.center,children:[
             Expanded(flex:6,child:copy),
-            const SizedBox(width:34),
-            Expanded(flex:5,child:visual),
+            const SizedBox(width:28),
+            Expanded(flex:6,child:visual),
           ]);
     return SizedBox(
       width:double.infinity,
@@ -275,7 +275,7 @@ class _HeroState extends State<_Hero>{
             Positioned(right:0,bottom:4,child:Transform.translate(offset:Offset(0,-scrollY*.02),child:const _ScrollHint())),
           ],
           Padding(
-            padding:EdgeInsets.only(left:mobile?0:58,right:mobile?0:54),
+            padding:EdgeInsets.only(left:mobile?0:58,right:mobile?0:42),
             child:core,
           ),
         ],
@@ -364,28 +364,55 @@ class _HeroVisual extends StatelessWidget{
   final bool mobile;
   const _HeroVisual({required this.mobile});
   @override Widget build(BuildContext context){
-    final h=mobile?500.0:570.0;
+    final h=mobile?560.0:650.0;
     return SizedBox(
       height:h,
       child:Stack(
         clipBehavior:Clip.none,
         children:[
           Positioned.fill(
+            child:Container(
+              decoration:BoxDecoration(
+                color:const Color(0xFFF2ECDF),
+                borderRadius:BorderRadius.circular(mobile?24:34),
+                boxShadow:const [BoxShadow(color:Color(0x12000000),blurRadius:28,offset:Offset(0,14))],
+              ),
+            ),
+          ),
+          Positioned(
+            left:mobile?8:12,
+            top:mobile?8:12,
+            right:mobile?8:12,
+            bottom:mobile?8:12,
             child:ClipRRect(
-              borderRadius:BorderRadius.circular(mobile?24:30),
+              borderRadius:BorderRadius.circular(mobile?22:32),
               child:Image.asset(
                 'assets/projects/Home.png',
-                fit:BoxFit.contain,
+                fit:BoxFit.cover,
                 alignment:Alignment.center,
               ),
             ),
           ),
-          Positioned(left:mobile?2:0,top:mobile?128:126,child:const _TechFloat(label:'Power BI',icon:Icons.bar_chart_rounded)),
-          Positioned(right:mobile?4:0,top:mobile?56:58,child:const _TechFloat(label:'Python',icon:Icons.code_rounded)),
-          Positioned(left:mobile?12:12,bottom:mobile?104:110,child:const _TechFloat(label:'SQL',icon:Icons.storage_rounded)),
-          Positioned(right:mobile?2:0,top:mobile?210:214,child:const _TechFloat(label:'Flutter',icon:Icons.phone_iphone_rounded)),
-          Positioned(right:mobile?6:10,bottom:mobile?62:70,child:const _TechFloat(label:'Excel',icon:Icons.table_chart_outlined)),
-          Positioned(left:mobile?54:54,bottom:mobile?0:0,child:const _InsightCard()),
+          Positioned.fill(
+            child:IgnorePointer(
+              child:DecoratedBox(
+                decoration:BoxDecoration(
+                  borderRadius:BorderRadius.circular(mobile?22:32),
+                  gradient:LinearGradient(
+                    begin:Alignment.topCenter,
+                    end:Alignment.bottomCenter,
+                    colors:[Colors.white.withOpacity(.02),_cream.withOpacity(.08)],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(left:mobile?12:8,top:mobile?118:128,child:const _TechFloat(label:'Power BI',icon:Icons.bar_chart_rounded)),
+          Positioned(right:mobile?12:10,top:mobile?52:58,child:const _TechFloat(label:'Python',icon:Icons.code_rounded)),
+          Positioned(left:mobile?18:16,bottom:mobile?116:122,child:const _TechFloat(label:'SQL',icon:Icons.storage_rounded)),
+          Positioned(right:mobile?12:8,top:mobile?220:238,child:const _TechFloat(label:'Flutter',icon:Icons.phone_iphone_rounded)),
+          Positioned(right:mobile?16:14,bottom:mobile?78:88,child:const _TechFloat(label:'Excel',icon:Icons.table_chart_outlined)),
+          Positioned(left:mobile?58:66,bottom:mobile?12:16,child:const _InsightCard()),
         ],
       ),
     );
