@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 void main()=>runApp(const FayPortfolio());
 
 const _cream=Color(0xFFF6F1E8);
-const _ink=Color(0xFF20251F);
-const _olive=Color(0xFF5B674F);
-const _line=Color(0xFFCFC6B8);
-const _muted=Color(0xFF67665F);
+const _ink=Color(0xFF394236);
+const _olive=Color(0xFF66735C);
+const _line=Color(0xFFD1C8B9);
+const _muted=Color(0xFF74766C);
 
 class FayPortfolio extends StatelessWidget{
   const FayPortfolio({super.key});
@@ -82,11 +82,11 @@ class _PortfolioPageState extends State<PortfolioPage>{
             surfaceTintColor:Colors.transparent,
             elevation:0,
             title:const Row(children:[
-              Text('FA',style:TextStyle(fontFamily:'serif',fontSize:28,fontWeight:FontWeight.w500,letterSpacing:-1)),
+              Text('FA',style:TextStyle(fontFamily:'serif',fontSize:28,fontWeight:FontWeight.w500,letterSpacing:-1,color:_ink)),
               SizedBox(width:14),
               SizedBox(height:22,child:VerticalDivider(width:1,thickness:1,color:_line)),
               SizedBox(width:14),
-              Text('FAY AL-MUTAIRI',style:TextStyle(fontWeight:FontWeight.w600,fontSize:12,letterSpacing:3.0)),
+              Text('FAY AL-MUTAIRI',style:TextStyle(fontWeight:FontWeight.w600,fontSize:12,letterSpacing:3.0,color:_ink)),
             ]),
             actions:mobile
                 ? [
@@ -257,23 +257,89 @@ class _HeroState extends State<_Hero>{
   @override Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){
     final mobile=constraints.maxWidth<780;
     final copy=_HeroCopy(onWork:widget.onWork,mobile:mobile);
-    final visual=Transform.translate(offset:Offset(0,-scrollY*.05),child:_HeroVisual(mobile:mobile));
+    final visual=Transform.translate(offset:Offset(0,-scrollY*.045),child:_HeroVisual(mobile:mobile));
+    final core=mobile
+        ? Column(crossAxisAlignment:CrossAxisAlignment.start,children:[copy,const SizedBox(height:34),visual,const SizedBox(height:18),const Align(alignment:Alignment.center,child:_ScrollHint(compact:true))])
+        : Row(crossAxisAlignment:CrossAxisAlignment.center,children:[
+            Expanded(flex:6,child:copy),
+            const SizedBox(width:34),
+            Expanded(flex:5,child:visual),
+          ]);
     return SizedBox(
       width:double.infinity,
-      child:Stack(children:[
-        if(!mobile)...[
-          Positioned(left:0,top:58,bottom:34,child:Container(width:1,color:_line)),
-          Positioned(left:-42,bottom:4,child:Opacity(opacity:.22,child:Icon(Icons.eco_outlined,size:165,color:_olive))),
+      child:Stack(
+        clipBehavior:Clip.none,
+        children:[
+          if(!mobile)...[
+            const Positioned(left:0,top:36,bottom:42,child:_HeroRail()),
+            Positioned(right:0,bottom:4,child:Transform.translate(offset:Offset(0,-scrollY*.025),child:const _ScrollHint())),
+          ],
+          Padding(
+            padding:EdgeInsets.only(left:mobile?0:58,right:mobile?0:54),
+            child:core,
+          ),
         ],
-        Padding(
-          padding:EdgeInsets.only(left:mobile?0:54),
-          child:mobile
-              ? Column(crossAxisAlignment:CrossAxisAlignment.start,children:[copy,const SizedBox(height:36),visual])
-              : Row(crossAxisAlignment:CrossAxisAlignment.center,children:[Expanded(flex:6,child:copy),const SizedBox(width:42),Expanded(flex:5,child:visual)]),
-        ),
-      ]),
+      ),
     );
   });
+}
+
+class _HeroRail extends StatelessWidget{
+  const _HeroRail();
+  @override
+  Widget build(BuildContext context)=>SizedBox(
+    width:44,
+    child:Column(
+      children:[
+        Expanded(
+          child:Stack(
+            alignment:Alignment.bottomCenter,
+            children:[
+              const Positioned.fill(left:21,right:21,child:ColoredBox(color:_line)),
+              Positioned(
+                bottom:22,
+                left:-24,
+                child:Opacity(
+                  opacity:.12,
+                  child:Transform.rotate(angle:-.16,child:const Icon(Icons.local_florist_outlined,size:124,color:_olive)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height:16),
+        const Text('01',style:TextStyle(fontSize:11,color:_olive,fontWeight:FontWeight.w600)),
+        const SizedBox(height:7),
+        Container(width:16,height:1,color:_line),
+        const SizedBox(height:7),
+        const Text('04',style:TextStyle(fontSize:11,color:_muted,fontWeight:FontWeight.w600)),
+      ],
+    ),
+  );
+}
+
+class _ScrollHint extends StatelessWidget{
+  final bool compact;
+  const _ScrollHint({this.compact=false});
+  @override
+  Widget build(BuildContext context)=>Column(
+    mainAxisSize:MainAxisSize.min,
+    children:[
+      Container(
+        width:compact?19:22,
+        height:compact?34:40,
+        decoration:BoxDecoration(border:Border.all(color:_olive,width:1.2),borderRadius:BorderRadius.circular(13)),
+        child:Align(
+          alignment:const Alignment(0,-.52),
+          child:Container(width:2,height:7,decoration:BoxDecoration(color:_olive,borderRadius:BorderRadius.circular(2))),
+        ),
+      ),
+      const SizedBox(height:8),
+      Text('Scroll\ndown',textAlign:TextAlign.center,style:TextStyle(fontSize:compact?9.5:10.5,height:1.05,color:_muted,fontWeight:FontWeight.w500)),
+      const SizedBox(height:8),
+      Icon(Icons.arrow_downward_rounded,size:compact?18:20,color:_olive),
+    ],
+  );
 }
 
 class _HeroCopy extends StatelessWidget{
@@ -298,19 +364,68 @@ class _HeroVisual extends StatelessWidget{
   final bool mobile;
   const _HeroVisual({required this.mobile});
   @override Widget build(BuildContext context){
-    final h=mobile?510.0:570.0;
+    final h=mobile?500.0:570.0;
     return SizedBox(
       height:h,
-      child:Stack(clipBehavior:Clip.none,children:[
-        Positioned(left:mobile?36:54,top:mobile?52:42,right:mobile?22:10,bottom:mobile?20:12,child:Container(decoration:BoxDecoration(color:const Color(0xFFE2E2D4),borderRadius:BorderRadius.only(topLeft:Radius.circular(mobile?150:210),topRight:Radius.circular(mobile?150:210))))),
-        Positioned(left:mobile?12:8,top:mobile?96:84,right:mobile?60:44,bottom:mobile?24:18,child:Container(decoration:BoxDecoration(border:Border.all(color:_line),borderRadius:BorderRadius.only(topLeft:Radius.circular(mobile?130:190),topRight:Radius.circular(mobile?130:190))),padding:const EdgeInsets.all(14),child:ClipRRect(borderRadius:BorderRadius.only(topLeft:Radius.circular(mobile?118:178),topRight:Radius.circular(mobile?118:178)),child:ColorFiltered(colorFilter:const ColorFilter.mode(Color(0x22A6A58F),BlendMode.multiply),child:Image.asset('assets/IMG_6645.PNG',fit:BoxFit.cover,alignment:Alignment.topCenter))))),
-        Positioned(left:mobile?6:-4,top:mobile?140:126,child:const _TechFloat(label:'Power BI',icon:Icons.bar_chart_rounded)),
-        Positioned(right:mobile?0:-16,top:mobile?78:62,child:const _TechFloat(label:'Python',icon:Icons.code_rounded)),
-        Positioned(left:mobile?16:8,bottom:mobile?110:118,child:const _TechFloat(label:'SQL',icon:Icons.storage_rounded)),
-        Positioned(right:mobile?0:-30,top:mobile?230:232,child:const _TechFloat(label:'Flutter',icon:Icons.phone_iphone_rounded)),
-        Positioned(right:mobile?4:-4,bottom:mobile?66:76,child:const _TechFloat(label:'Excel',icon:Icons.table_chart_outlined)),
-        Positioned(left:mobile?66:62,bottom:mobile?0:-2,child:const _InsightCard()),
-      ]),
+      child:Stack(
+        clipBehavior:Clip.none,
+        children:[
+          Positioned(
+            left:mobile?34:52,
+            top:mobile?34:28,
+            right:mobile?28:28,
+            bottom:mobile?24:18,
+            child:Container(
+              decoration:BoxDecoration(
+                color:const Color(0xFFE4E5D8),
+                borderRadius:BorderRadius.only(
+                  topLeft:Radius.circular(mobile?145:205),
+                  topRight:Radius.circular(mobile?145:205),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left:mobile?20:28,
+            top:mobile?54:44,
+            right:mobile?42:48,
+            bottom:mobile?30:24,
+            child:Container(
+              decoration:BoxDecoration(
+                border:Border.all(color:_line),
+                borderRadius:BorderRadius.only(
+                  topLeft:Radius.circular(mobile?132:190),
+                  topRight:Radius.circular(mobile?132:190),
+                ),
+              ),
+              padding:const EdgeInsets.all(12),
+              child:ClipRRect(
+                borderRadius:BorderRadius.only(
+                  topLeft:Radius.circular(mobile?120:178),
+                  topRight:Radius.circular(mobile?120:178),
+                ),
+                child:ColoredBox(
+                  color:const Color(0xFFE9E6DC),
+                  child:ColorFiltered(
+                    colorFilter:const ColorFilter.mode(Color(0x159A9A83),BlendMode.multiply),
+                    child:Image.asset(
+                      'assets/IMG_6645.PNG',
+                      fit:BoxFit.contain,
+                      alignment:Alignment.center,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(left:mobile?2:0,top:mobile?128:126,child:const _TechFloat(label:'Power BI',icon:Icons.bar_chart_rounded)),
+          Positioned(right:mobile?4:0,top:mobile?56:58,child:const _TechFloat(label:'Python',icon:Icons.code_rounded)),
+          Positioned(left:mobile?12:12,bottom:mobile?104:110,child:const _TechFloat(label:'SQL',icon:Icons.storage_rounded)),
+          Positioned(right:mobile?2:0,top:mobile?210:214,child:const _TechFloat(label:'Flutter',icon:Icons.phone_iphone_rounded)),
+          Positioned(right:mobile?6:10,bottom:mobile?62:70,child:const _TechFloat(label:'Excel',icon:Icons.table_chart_outlined)),
+          Positioned(left:mobile?54:54,bottom:mobile?0:0,child:const _InsightCard()),
+        ],
+      ),
     );
   }
 }
