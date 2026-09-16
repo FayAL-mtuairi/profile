@@ -24,14 +24,7 @@ class PortfolioPage extends StatefulWidget{
 
 class _PortfolioPageState extends State<PortfolioPage>{
   final about=GlobalKey(),training=GlobalKey(),projects=GlobalKey(),skills=GlobalKey(),contact=GlobalKey();
-
-  void go(GlobalKey k){
-    final c=k.currentContext;
-    if(c!=null){
-      Scrollable.ensureVisible(c,duration:const Duration(milliseconds:520),curve:Curves.easeOutCubic);
-    }
-  }
-
+  void go(GlobalKey k){final c=k.currentContext;if(c!=null)Scrollable.ensureVisible(c,duration:const Duration(milliseconds:520),curve:Curves.easeOutCubic);}
   @override
   Widget build(BuildContext c){
     final mobile=MediaQuery.sizeOf(c).width<760;
@@ -48,13 +41,7 @@ class _PortfolioPageState extends State<PortfolioPage>{
                     PopupMenuButton<String>(
                       icon:const Icon(Icons.menu_rounded),
                       color:const Color(0xFFF4EFE7),
-                      onSelected:(v){
-                        if(v=='about')go(about);
-                        if(v=='training')go(training);
-                        if(v=='projects')go(projects);
-                        if(v=='skills')go(skills);
-                        if(v=='contact')go(contact);
-                      },
+                      onSelected:(v){if(v=='about')go(about);if(v=='training')go(training);if(v=='projects')go(projects);if(v=='skills')go(skills);if(v=='contact')go(contact);},
                       itemBuilder:(c)=>const [
                         PopupMenuItem(value:'about',child:Row(children:[Icon(Icons.person_outline,size:18),SizedBox(width:10),Text('About')])),
                         PopupMenuItem(value:'training',child:Row(children:[Icon(Icons.work_outline,size:18),SizedBox(width:10),Text('Training')])),
@@ -65,14 +52,7 @@ class _PortfolioPageState extends State<PortfolioPage>{
                     ),
                     const SizedBox(width:8),
                   ]
-                : [
-                    _Nav('About',()=>go(about)),
-                    _Nav('Training',()=>go(training)),
-                    _Nav('Projects',()=>go(projects)),
-                    _Nav('Skills',()=>go(skills)),
-                    _Nav('Contact',()=>go(contact)),
-                    const SizedBox(width:16),
-                  ],
+                : [_Nav('About',()=>go(about)),_Nav('Training',()=>go(training)),_Nav('Projects',()=>go(projects)),_Nav('Skills',()=>go(skills)),_Nav('Contact',()=>go(contact)),const SizedBox(width:16)],
           ),
           SliverToBoxAdapter(
             child:Center(
@@ -80,21 +60,18 @@ class _PortfolioPageState extends State<PortfolioPage>{
                 constraints:const BoxConstraints(maxWidth:1160),
                 child:Padding(
                   padding:const EdgeInsets.symmetric(horizontal:24),
-                  child:Column(
-                    crossAxisAlignment:CrossAxisAlignment.start,
-                    children:[
-                      const SizedBox(height:70),
-                      _Hero(onWork:()=>go(projects)),
-                      const SizedBox(height:100),
-                      _Section(key:about,n:'01',title:'About',icon:Icons.person_outline,child:const _ScrollReveal(child:_About())),
-                      _Section(key:training,n:'02',title:'Training',icon:Icons.work_outline,child:const _Training()),
-                      _Section(key:projects,n:'03',title:'Projects',icon:Icons.grid_view_rounded,child:const _Projects()),
-                      _Section(key:skills,n:'04',title:'Skills',icon:Icons.auto_awesome_outlined,child:const _Skills()),
-                      _Section(key:contact,n:'05',title:'Contact',icon:Icons.mail_outline,child:const _Contact()),
-                      const Divider(),
-                      const Padding(padding:EdgeInsets.symmetric(vertical:26),child:Text('Fay Al-Mutairi  •  Information Technology  •  Saudi Arabia')),
-                    ],
-                  ),
+                  child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                    const SizedBox(height:70),
+                    _Hero(onWork:()=>go(projects)),
+                    const SizedBox(height:100),
+                    _Section(key:about,n:'01',title:'About',icon:Icons.person_outline,child:const _ScrollReveal(child:_About())),
+                    _Section(key:training,n:'02',title:'Training',icon:Icons.work_outline,child:const _Training()),
+                    _Section(key:projects,n:'03',title:'Projects',icon:Icons.grid_view_rounded,child:const _Projects()),
+                    _Section(key:skills,n:'04',title:'Skills',icon:Icons.auto_awesome_outlined,child:const _Skills()),
+                    _Section(key:contact,n:'05',title:'Contact',icon:Icons.mail_outline,child:const _Contact()),
+                    const Divider(),
+                    const Padding(padding:EdgeInsets.symmetric(vertical:26),child:Text('Fay Al-Mutairi  •  Information Technology  •  Saudi Arabia')),
+                  ]),
                 ),
               ),
             ),
@@ -115,82 +92,17 @@ class _ScrollRevealState extends State<_ScrollReveal> with SingleTickerProviderS
   late final Animation<double> fade;
   late final Animation<Offset> slide;
   bool started=false;
-
-  @override
-  void initState(){
-    super.initState();
-    controller=AnimationController(vsync:this,duration:const Duration(milliseconds:720));
-    fade=CurvedAnimation(parent:controller,curve:Curves.easeOut);
-    slide=Tween<Offset>(begin:const Offset(0,.09),end:Offset.zero).animate(CurvedAnimation(parent:controller,curve:Curves.easeOutCubic));
-    WidgetsBinding.instance.addPostFrameCallback((_)=>_check());
-  }
-
-  void _check(){
-    if(!mounted||started)return;
-    final box=context.findRenderObject();
-    if(box is RenderBox){
-      final top=box.localToGlobal(Offset.zero).dy;
-      final h=MediaQuery.sizeOf(context).height;
-      if(top<h*.88){
-        started=true;
-        controller.forward();
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context){
-    WidgetsBinding.instance.addPostFrameCallback((_)=>_check());
-    return NotificationListener<ScrollNotification>(
-      onNotification:(_){_check();return false;},
-      child:FadeTransition(opacity:fade,child:SlideTransition(position:slide,child:widget.child)),
-    );
-  }
-
+  @override void initState(){super.initState();controller=AnimationController(vsync:this,duration:const Duration(milliseconds:720));fade=CurvedAnimation(parent:controller,curve:Curves.easeOut);slide=Tween<Offset>(begin:const Offset(0,.09),end:Offset.zero).animate(CurvedAnimation(parent:controller,curve:Curves.easeOutCubic));WidgetsBinding.instance.addPostFrameCallback((_)=>_check());}
+  void _check(){if(!mounted||started)return;final box=context.findRenderObject();if(box is RenderBox){final top=box.localToGlobal(Offset.zero).dy;final h=MediaQuery.sizeOf(context).height;if(top<h*.88){started=true;controller.forward();}}}
+  @override Widget build(BuildContext context){WidgetsBinding.instance.addPostFrameCallback((_)=>_check());return NotificationListener<ScrollNotification>(onNotification:(_){_check();return false;},child:FadeTransition(opacity:fade,child:SlideTransition(position:slide,child:widget.child)));}
   @override void dispose(){controller.dispose();super.dispose();}
 }
 
 class _Nav extends StatelessWidget{final String t;final VoidCallback f;const _Nav(this.t,this.f);@override Widget build(BuildContext c)=>TextButton(onPressed:f,child:Text(t,style:const TextStyle(color:Color(0xFF171717),fontWeight:FontWeight.w600)));}
 
-class _Hero extends StatelessWidget{
-  final VoidCallback onWork;
-  const _Hero({required this.onWork});
-  @override Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){
-    final s=x.maxWidth<780;
-    final text=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-      const Row(children:[Icon(Icons.code_rounded,size:16),SizedBox(width:8),Text('INFORMATION TECHNOLOGY',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,letterSpacing:2.2))]),
-      const SizedBox(height:18),
-      FittedBox(fit:BoxFit.scaleDown,alignment:Alignment.centerLeft,child:Text('Fay Al-Mutairi',maxLines:1,style:TextStyle(fontSize:s?54:76,height:.98,fontWeight:FontWeight.w900,letterSpacing:-2.2))),
-      const SizedBox(height:24),
-      const Text('IT graduate focused on data analytics, Flutter development and practical AI. My work combines hands-on training with projects built around real interfaces, datasets, APIs and software solutions.',style:TextStyle(fontSize:18,height:1.6,color:Color(0xFF504A43))),
-      const SizedBox(height:28),
-      FilledButton.icon(onPressed:onWork,icon:const Icon(Icons.arrow_downward_rounded,size:18),label:const Text('View my work'),style:FilledButton.styleFrom(backgroundColor:const Color(0xFF171717),padding:const EdgeInsets.symmetric(horizontal:24,vertical:17),shape:const RoundedRectangleBorder())),
-    ]);
-    final image=Container(height:s?350:480,decoration:BoxDecoration(border:Border.all(color:const Color(0xFF171717))),child:Image.asset('assets/IMG_6645.PNG',fit:BoxFit.cover));
-    return s?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:38),image]):Row(children:[Expanded(flex:6,child:text),const SizedBox(width:55),Expanded(flex:4,child:image)]);
-  });
-}
+class _Hero extends StatelessWidget{final VoidCallback onWork;const _Hero({required this.onWork});@override Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){final s=x.maxWidth<780;final text=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Row(children:[Icon(Icons.code_rounded,size:16),SizedBox(width:8),Text('INFORMATION TECHNOLOGY',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,letterSpacing:2.2))]),const SizedBox(height:18),FittedBox(fit:BoxFit.scaleDown,alignment:Alignment.centerLeft,child:Text('Fay Al-Mutairi',maxLines:1,style:TextStyle(fontSize:s?54:76,height:.98,fontWeight:FontWeight.w900,letterSpacing:-2.2))),const SizedBox(height:24),const Text('IT graduate focused on data analytics, Flutter development and practical AI. My work combines hands-on training with projects built around real interfaces, datasets, APIs and software solutions.',style:TextStyle(fontSize:18,height:1.6,color:Color(0xFF504A43))),const SizedBox(height:28),FilledButton.icon(onPressed:onWork,icon:const Icon(Icons.arrow_downward_rounded,size:18),label:const Text('View my work'),style:FilledButton.styleFrom(backgroundColor:const Color(0xFF171717),padding:const EdgeInsets.symmetric(horizontal:24,vertical:17),shape:const RoundedRectangleBorder()))]);final image=Container(height:s?350:480,decoration:BoxDecoration(border:Border.all(color:const Color(0xFF171717))),child:Image.asset('assets/IMG_6645.PNG',fit:BoxFit.cover));return s?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:38),image]):Row(children:[Expanded(flex:6,child:text),const SizedBox(width:55),Expanded(flex:4,child:image)]);});}
 
-class _Section extends StatelessWidget{
-  final String n,title;
-  final IconData icon;
-  final Widget child;
-  const _Section({super.key,required this.n,required this.title,required this.icon,required this.child});
-  @override Widget build(BuildContext c)=>Padding(
-    padding:const EdgeInsets.only(bottom:95),
-    child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-      const Divider(),
-      const SizedBox(height:16),
-      Row(children:[
-        Container(width:42,height:42,decoration:BoxDecoration(color:const Color(0xFF171717),borderRadius:BorderRadius.circular(12)),child:Icon(icon,color:Colors.white,size:21)),
-        const SizedBox(width:14),
-        Text('$n   $title',style:const TextStyle(fontSize:34,fontWeight:FontWeight.w900,letterSpacing:-1)),
-      ]),
-      const SizedBox(height:38),
-      child,
-    ]),
-  );
-}
+class _Section extends StatelessWidget{final String n,title;final IconData icon;final Widget child;const _Section({super.key,required this.n,required this.title,required this.icon,required this.child});@override Widget build(BuildContext c)=>Padding(padding:const EdgeInsets.only(bottom:95),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Divider(),const SizedBox(height:16),Row(children:[Container(width:42,height:42,decoration:BoxDecoration(color:const Color(0xFF171717),borderRadius:BorderRadius.circular(12)),child:Icon(icon,color:Colors.white,size:21)),const SizedBox(width:14),Text('$n   $title',style:const TextStyle(fontSize:34,fontWeight:FontWeight.w900,letterSpacing:-1))]),const SizedBox(height:38),child]));}
 
 class _About extends StatelessWidget{
   const _About();
@@ -198,26 +110,17 @@ class _About extends StatelessWidget{
   Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){
     final mobile=x.maxWidth<760;
     final story=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-      const Text('I like turning ideas into clear, useful digital experiences.',style:TextStyle(fontSize:mobile?32:46,height:1.08,fontWeight:FontWeight.w900,letterSpacing:-1.2)),
+      Text('I like turning ideas into clear, useful digital experiences.',style:TextStyle(fontSize:mobile?32:46,height:1.08,fontWeight:FontWeight.w900,letterSpacing:-1.2)),
       const SizedBox(height:22),
       const Text('I am an Information Technology graduate from Qassim University. My work sits between data, product thinking and development — from dashboards and data cleaning to Flutter applications, APIs, Firebase and practical AI.',style:TextStyle(fontSize:18,height:1.7,color:Color(0xFF4E4943))),
       const SizedBox(height:18),
       const Text('What matters to me is not just making something work, but making it understandable, organized and pleasant to use.',style:TextStyle(fontSize:18,height:1.7,color:Color(0xFF4E4943))),
       const SizedBox(height:28),
-      Wrap(spacing:10,runSpacing:10,children:const [
-        _AboutPill(Icons.insights_outlined,'Data Analytics'),
-        _AboutPill(Icons.phone_iphone_rounded,'Flutter'),
-        _AboutPill(Icons.memory_outlined,'Practical AI'),
-        _AboutPill(Icons.design_services_outlined,'UI thinking'),
-      ]),
+      const Wrap(spacing:10,runSpacing:10,children:[_AboutPill(Icons.insights_outlined,'Data Analytics'),_AboutPill(Icons.phone_iphone_rounded,'Flutter'),_AboutPill(Icons.memory_outlined,'Practical AI'),_AboutPill(Icons.design_services_outlined,'UI thinking')]),
     ]);
-
     final visual=Container(
       height:mobile?330:430,
-      decoration:BoxDecoration(
-        color:const Color(0xFF171717),
-        borderRadius:BorderRadius.circular(26),
-      ),
+      decoration:BoxDecoration(color:const Color(0xFF171717),borderRadius:BorderRadius.circular(26)),
       child:Stack(children:[
         Positioned.fill(child:CustomPaint(painter:_OrbitPainter())),
         const Align(alignment:Alignment.center,child:_CoreNode()),
@@ -227,47 +130,20 @@ class _About extends StatelessWidget{
         const Positioned(bottom:48,right:52,child:_SkillNode(label:'UX',icon:Icons.draw_outlined)),
       ]),
     );
-
-    if(mobile)return Column(crossAxisAlignment:CrossAxisAlignment.start,children:[story,const SizedBox(height:30),visual]);
-    return Row(crossAxisAlignment:CrossAxisAlignment.center,children:[Expanded(flex:6,child:story),const SizedBox(width:52),Expanded(flex:5,child:visual)]);
+    return mobile?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[story,const SizedBox(height:30),visual]):Row(crossAxisAlignment:CrossAxisAlignment.center,children:[Expanded(flex:6,child:story),const SizedBox(width:52),Expanded(flex:5,child:visual)]);
   });
 }
 
-class _AboutPill extends StatelessWidget{
-  final IconData icon;
-  final String text;
-  const _AboutPill(this.icon,this.text);
-  @override Widget build(BuildContext c)=>Container(
-    padding:const EdgeInsets.symmetric(horizontal:14,vertical:10),
-    decoration:BoxDecoration(border:Border.all(color:const Color(0xFF8E857A)),borderRadius:BorderRadius.circular(22)),
-    child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icon,size:17),const SizedBox(width:8),Text(text,style:const TextStyle(fontWeight:FontWeight.w700))]),
-  );
-}
-
-class _CoreNode extends StatelessWidget{const _CoreNode();@override Widget build(BuildContext c)=>Container(width:112,height:112,decoration:BoxDecoration(shape:BoxShape.circle,color:const Color(0xFFF4EFE7),boxShadow:const [BoxShadow(color:Color(0x558E857A),blurRadius:34,spreadRadius:2)]),child:const Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(Icons.hub_outlined,size:28),SizedBox(height:6),Text('FAY',style:TextStyle(fontWeight:FontWeight.w900,letterSpacing:1.4))]));}
+class _AboutPill extends StatelessWidget{final IconData icon;final String text;const _AboutPill(this.icon,this.text);@override Widget build(BuildContext c)=>Container(padding:const EdgeInsets.symmetric(horizontal:14,vertical:10),decoration:BoxDecoration(border:Border.all(color:const Color(0xFF8E857A)),borderRadius:BorderRadius.circular(22)),child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icon,size:17),const SizedBox(width:8),Text(text,style:const TextStyle(fontWeight:FontWeight.w700))]));}
+class _CoreNode extends StatelessWidget{const _CoreNode();@override Widget build(BuildContext c)=>Container(width:112,height:112,decoration:const BoxDecoration(shape:BoxShape.circle,color:Color(0xFFF4EFE7),boxShadow:[BoxShadow(color:Color(0x558E857A),blurRadius:34,spreadRadius:2)]),child:const Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(Icons.hub_outlined,size:28),SizedBox(height:6),Text('FAY',style:TextStyle(fontWeight:FontWeight.w900,letterSpacing:1.4))]));}
 class _SkillNode extends StatelessWidget{final String label;final IconData icon;const _SkillNode({required this.label,required this.icon});@override Widget build(BuildContext c)=>Container(padding:const EdgeInsets.symmetric(horizontal:13,vertical:10),decoration:BoxDecoration(color:const Color(0xFF2A2927),borderRadius:BorderRadius.circular(20),border:Border.all(color:const Color(0xFF4A4844))),child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icon,size:16,color:const Color(0xFFF4EFE7)),const SizedBox(width:7),Text(label,style:const TextStyle(color:Color(0xFFF4EFE7),fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.1))]));}
-class _OrbitPainter extends CustomPainter{
-  @override void paint(Canvas canvas,Size size){
-    final paint=Paint()..color=const Color(0xFF5A5651)..strokeWidth=1.2..style=PaintingStyle.stroke;
-    final c=Offset(size.width/2,size.height/2);
-    canvas.drawCircle(c,size.shortestSide*.28,paint);
-    canvas.drawCircle(c,size.shortestSide*.39,paint..color=const Color(0xFF343230));
-    final line=Paint()..color=const Color(0xFF4A4742)..strokeWidth=1;
-    canvas.drawLine(c,Offset(size.width*.18,size.height*.18),line);
-    canvas.drawLine(c,Offset(size.width*.82,size.height*.22),line);
-    canvas.drawLine(c,Offset(size.width*.2,size.height*.78),line);
-    canvas.drawLine(c,Offset(size.width*.82,size.height*.8),line);
-  }
-  @override bool shouldRepaint(covariant CustomPainter oldDelegate)=>false;
-}
+class _OrbitPainter extends CustomPainter{@override void paint(Canvas canvas,Size size){final p1=Paint()..color=const Color(0xFF5A5651)..strokeWidth=1.2..style=PaintingStyle.stroke;final c=Offset(size.width/2,size.height/2);canvas.drawCircle(c,size.shortestSide*.28,p1);final p2=Paint()..color=const Color(0xFF343230)..strokeWidth=1.2..style=PaintingStyle.stroke;canvas.drawCircle(c,size.shortestSide*.39,p2);final line=Paint()..color=const Color(0xFF4A4742)..strokeWidth=1;canvas.drawLine(c,Offset(size.width*.18,size.height*.18),line);canvas.drawLine(c,Offset(size.width*.82,size.height*.22),line);canvas.drawLine(c,Offset(size.width*.2,size.height*.78),line);canvas.drawLine(c,Offset(size.width*.82,size.height*.8),line);}@override bool shouldRepaint(covariant CustomPainter oldDelegate)=>false;}
 
 class _Training extends StatelessWidget{const _Training();@override Widget build(BuildContext c)=>const Column(children:[_TrainingCard(title:'Data Analysis Intern',place:'Al Qassim Municipality • Data Management & Statistics Office',period:'June – August 2025',body:'Completed an 8-week cooperative training program in a government data environment. Worked on cleaning and validating 750+ municipal records, reviewing data quality and inconsistencies, and supporting KPI reporting. Built analytical dashboards with Power BI and Excel for quarterly comparisons and clearer decision-support reporting. Internal datasets and work samples are not displayed because the training was completed within a government entity.',tags:['Power BI','Excel','Data Cleaning','Data Validation','KPI Reporting','Data Visualization'],image:'assets/projects/training.png'),_TrainingCard(title:'Application Development Intern',place:'Kharja • Startup',period:'February – May 2024',body:'Worked in application development using Flutter and Dart, with Firebase for authentication, database and backend-connected services. The training strengthened my understanding of UI/UX implementation, mobile application structure, software-development workflow and turning interface concepts into functional application screens.',tags:['Flutter','Dart','Firebase','UI/UX','Mobile Development','Git'])]);}
 class _TrainingCard extends StatelessWidget{final String title,place,period,body;final List<String> tags;final String? image;const _TrainingCard({required this.title,required this.place,required this.period,required this.body,required this.tags,this.image});@override Widget build(BuildContext c)=>Container(width:double.infinity,padding:const EdgeInsets.symmetric(vertical:30),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFBDB4A8)))),child:LayoutBuilder(builder:(c,x){final compact=x.maxWidth<760;final text=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w800)),const SizedBox(height:6),Text(place,style:const TextStyle(fontSize:16,fontWeight:FontWeight.w700)),Text(period,style:const TextStyle(color:Color(0xFF6C655D))),const SizedBox(height:16),Text(body,style:const TextStyle(fontSize:16,height:1.65,color:Color(0xFF4E4943))),const SizedBox(height:16),Wrap(spacing:8,runSpacing:8,children:tags.map((e)=>_Tag(e)).toList())]);if(image==null)return text;final cert=Container(height:compact?170:190,width:double.infinity,padding:const EdgeInsets.all(10),color:Colors.white,child:Image.asset(image!,fit:BoxFit.contain));return compact?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:20),cert]):Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(flex:7,child:text),const SizedBox(width:28),Expanded(flex:3,child:cert)]);}));}
 
 class _Projects extends StatefulWidget{const _Projects();@override State<_Projects> createState()=>_ProjectsState();}
-class _ProjectsState extends State<_Projects>{String filter='All';static const items=[_Project('Anees','AI','Graduation Project','A wellbeing application and AI-focused graduation project designed around emotion understanding and supportive user experiences. The interfaces include mood check-ins, habit tracking, breathing exercises, community support, and interaction through voice or camera. The AI work explored multimodal emotion recognition using audio, facial and video inputs and datasets including RAVDESS and MELD.',['AI','Deep Learning','Flutter','Emotion Recognition'],['assets/projects/anees-1.png','assets/projects/anees-2.png','assets/projects/anees-3.png','assets/projects/anees-4.png','assets/projects/anees-5.png']),_Project('Weather Dashboard','Data Analytics','API • Dashboard','A weather dashboard connected to an API and refreshed periodically. It presents current conditions, multi-day forecasts, humidity, wind speed, visibility, pressure, UV index, precipitation, sunrise/sunset and air-quality indicators in one visual view.',['API','Dashboard','Data Visualization'],['assets/projects/weather.jpg']),_Project('Sales Dashboard','Data Analytics','Business Analytics','A clean sales dashboard created to demonstrate analysis and visualization skills through KPIs, sales and revenue comparisons, customers, product performance, trends and weekly category views.',['Power BI','KPIs','Sales Analytics'],['assets/projects/sales.jpg']),_Project('COVID-19 Dashboard','Data Analytics','Tableau • Large Dataset','Built from a large COVID-19 dataset in Tableau to explore deaths by continent, population infection percentages, country comparisons, geographic distribution and overall cases and deaths.',['Tableau','Large Dataset','Analytics'],['assets/projects/covid.png']),_Project('Real Estate App','Flutter & Mobile','Flutter','A simple real-estate mobile application with property browsing, search and filters. Users can browse houses, villas and apartments and narrow listings through a straightforward mobile interface.',['Flutter','Mobile','Filters'],['assets/projects/realestate-1.png','assets/projects/realestate-2.png']),_Project('Graduation Projects Platform','Flutter & Mobile','Flutter Web','A Flutter Web platform created as a dedicated space for students to showcase graduation projects. Students submit their projects through a structured form, making project sharing and discovery more organized.',['Flutter Web','Forms','UI/UX'],['assets/projects/gradplatform.png']),_Project('Kharja','Flutter & Mobile','Mobile Application','A mobile application project developed around planning outings and nearby activities. The interface includes creating a new outing, adding a cover image, title and description, and selecting categories such as sports, food, music, gaming, arts and culture.',['Flutter','Mobile Development','UI/UX'],['assets/projects/kharja-1.png','assets/projects/kharja-2.png']),_Project('Library Database Schema','Web & Database','Database Design','A database-design project for a university library system focused on entities, relationships and organized information structure.',['Database Design','SQL','Data Modeling'],[])];@override Widget build(BuildContext c){const filters=['All','Data Analytics','Flutter & Mobile','AI','Web & Database'];final shown=filter=='All'?items:items.where((e)=>e.category==filter).toList();return Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Browse by area. Open a project to see the full description, skills and images.',style:TextStyle(fontSize:16,height:1.6,color:Color(0xFF5A544D))),const SizedBox(height:18),Wrap(spacing:9,runSpacing:9,children:filters.map((e)=>ChoiceChip(label:Text(e),selected:filter==e,onSelected:(_)=>setState(()=>filter=e),selectedColor:const Color(0xFF171717),labelStyle:TextStyle(color:filter==e?Colors.white:const Color(0xFF171717)))).toList()),const SizedBox(height:30),LayoutBuilder(builder:(c,x){final w=x.maxWidth<700?x.maxWidth:(x.maxWidth-20)/2;return Wrap(spacing:20,runSpacing:20,children:shown.map((p)=>SizedBox(width:w,child:_HoverLift(child:_ProjectCard(p)))).toList());})]);}}
-class _HoverLift extends StatefulWidget{final Widget child;const _HoverLift({required this.child});@override State<_HoverLift> createState()=>_HoverLiftState();}
-class _HoverLiftState extends State<_HoverLift>{bool hover=false;@override Widget build(BuildContext c)=>MouseRegion(onEnter:(_)=>setState(()=>hover=true),onExit:(_)=>setState(()=>hover=false),child:AnimatedContainer(duration:const Duration(milliseconds:180),transform:Matrix4.translationValues(0,hover?-6:0,0),decoration:BoxDecoration(boxShadow:hover?const [BoxShadow(color:Color(0x18000000),blurRadius:24,offset:Offset(0,12))]:const []),child:widget.child));}
+class _ProjectsState extends State<_Projects>{String filter='All';static const items=[_Project('Anees','AI','Graduation Project','A wellbeing application and AI-focused graduation project designed around emotion understanding and supportive user experiences. The interfaces include mood check-ins, habit tracking, breathing exercises, community support, and interaction through voice or camera. The AI work explored multimodal emotion recognition using audio, facial and video inputs and datasets including RAVDESS and MELD.',['AI','Deep Learning','Flutter','Emotion Recognition'],['assets/projects/anees-1.png','assets/projects/anees-2.png','assets/projects/anees-3.png','assets/projects/anees-4.png','assets/projects/anees-5.png']),_Project('Weather Dashboard','Data Analytics','API • Dashboard','A weather dashboard connected to an API and refreshed periodically. It presents current conditions, multi-day forecasts, humidity, wind speed, visibility, pressure, UV index, precipitation, sunrise/sunset and air-quality indicators in one visual view.',['API','Dashboard','Data Visualization'],['assets/projects/weather.jpg']),_Project('Sales Dashboard','Data Analytics','Business Analytics','A clean sales dashboard created to demonstrate analysis and visualization skills through KPIs, sales and revenue comparisons, customers, product performance, trends and weekly category views.',['Power BI','KPIs','Sales Analytics'],['assets/projects/sales.jpg']),_Project('COVID-19 Dashboard','Data Analytics','Tableau • Large Dataset','Built from a large COVID-19 dataset in Tableau to explore deaths by continent, population infection percentages, country comparisons, geographic distribution and overall cases and deaths.',['Tableau','Large Dataset','Analytics'],['assets/projects/covid.png']),_Project('Real Estate App','Flutter & Mobile','Flutter','A simple real-estate mobile application with property browsing, search and filters. Users can browse houses, villas and apartments and narrow listings through a straightforward mobile interface.',['Flutter','Mobile','Filters'],['assets/projects/realestate-1.png','assets/projects/realestate-2.png']),_Project('Graduation Projects Platform','Flutter & Mobile','Flutter Web','A Flutter Web platform created as a dedicated space for students to showcase graduation projects. Students submit their projects through a structured form, making project sharing and discovery more organized.',['Flutter Web','Forms','UI/UX'],['assets/projects/gradplatform.png']),_Project('Kharja','Flutter & Mobile','Mobile Application','A mobile application project developed around planning outings and nearby activities. The interface includes creating a new outing, adding a cover image, title and description, and selecting categories such as sports, food, music, gaming, arts and culture.',['Flutter','Mobile Development','UI/UX'],['assets/projects/kharja-1.png','assets/projects/kharja-2.png']),_Project('Library Database Schema','Web & Database','Database Design','A database-design project for a university library system focused on entities, relationships and organized information structure.',['Database Design','SQL','Data Modeling'],[])];@override Widget build(BuildContext c){const filters=['All','Data Analytics','Flutter & Mobile','AI','Web & Database'];final shown=filter=='All'?items:items.where((e)=>e.category==filter).toList();return Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Browse by area. Open a project to see the full description, skills and images.',style:TextStyle(fontSize:16,height:1.6,color:Color(0xFF5A544D))),const SizedBox(height:18),Wrap(spacing:9,runSpacing:9,children:filters.map((e)=>ChoiceChip(label:Text(e),selected:filter==e,onSelected:(_)=>setState(()=>filter=e),selectedColor:const Color(0xFF171717),labelStyle:TextStyle(color:filter==e?Colors.white:const Color(0xFF171717)))).toList()),const SizedBox(height:30),LayoutBuilder(builder:(c,x){final w=x.maxWidth<700?x.maxWidth:(x.maxWidth-20)/2;return Wrap(spacing:20,runSpacing:20,children:shown.map((p)=>SizedBox(width:w,child:_ProjectCard(p))).toList());})]);}}
 class _Project{final String title,category,type,description;final List<String> tags,images;const _Project(this.title,this.category,this.type,this.description,this.tags,this.images);}
 class _ProjectCard extends StatelessWidget{final _Project p;const _ProjectCard(this.p);@override Widget build(BuildContext c){final cover=p.images.isNotEmpty?p.images.first:null;return Material(color:const Color(0xFFE9E1D6),child:InkWell(onTap:()=>Navigator.of(c).push(MaterialPageRoute(builder:(_)=>_ProjectDetails(p))),child:Container(decoration:BoxDecoration(border:Border.all(color:const Color(0xFFBDB4A8))),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[if(cover!=null)Container(height:185,width:double.infinity,color:const Color(0xFFF8F5F0),padding:const EdgeInsets.all(14),child:Image.asset(cover,fit:BoxFit.contain)),Padding(padding:const EdgeInsets.all(22),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[const Icon(Icons.folder_open_outlined,size:16),const SizedBox(width:7),Text(p.category.toUpperCase(),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.4))]),const SizedBox(height:12),Text(p.title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w900)),const SizedBox(height:6),Text(p.type,style:const TextStyle(color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),const SizedBox(height:16),const Row(children:[Text('View project',style:TextStyle(fontWeight:FontWeight.w700)),SizedBox(width:6),Icon(Icons.arrow_forward,size:17)])]))])))));}}
 class _ProjectDetails extends StatefulWidget{final _Project p;const _ProjectDetails(this.p);@override State<_ProjectDetails> createState()=>_ProjectDetailsState();}
