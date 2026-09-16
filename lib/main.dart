@@ -5,7 +5,7 @@ void main()=>runApp(const FayPortfolio());
 class FayPortfolio extends StatelessWidget{
   const FayPortfolio({super.key});
   @override
-  Widget build(BuildContext c)=>MaterialApp(
+  Widget build(BuildContext context)=>MaterialApp(
     debugShowCheckedModeBanner:false,
     title:'Fay Al-Mutairi | Portfolio',
     theme:ThemeData(
@@ -19,16 +19,23 @@ class FayPortfolio extends StatelessWidget{
 
 class PortfolioPage extends StatefulWidget{
   const PortfolioPage({super.key});
-  @override State<PortfolioPage> createState()=>_PortfolioPageState();
+  @override
+  State<PortfolioPage> createState()=>_PortfolioPageState();
 }
 
 class _PortfolioPageState extends State<PortfolioPage>{
-  final about=GlobalKey(),training=GlobalKey(),projects=GlobalKey(),skills=GlobalKey(),contact=GlobalKey();
+  final about=GlobalKey();
+  final training=GlobalKey();
+  final projects=GlobalKey();
+  final skills=GlobalKey();
+  final contact=GlobalKey();
   final ScrollController _scrollController=ScrollController();
 
-  void go(GlobalKey k){
-    final c=k.currentContext;
-    if(c!=null)Scrollable.ensureVisible(c,duration:const Duration(milliseconds:520),curve:Curves.easeOutCubic);
+  void go(GlobalKey key){
+    final sectionContext=key.currentContext;
+    if(sectionContext!=null){
+      Scrollable.ensureVisible(sectionContext,duration:const Duration(milliseconds:520),curve:Curves.easeOutCubic,alignment:.04);
+    }
   }
 
   @override
@@ -38,8 +45,8 @@ class _PortfolioPageState extends State<PortfolioPage>{
   }
 
   @override
-  Widget build(BuildContext c){
-    final mobile=MediaQuery.sizeOf(c).width<760;
+  Widget build(BuildContext context){
+    final mobile=MediaQuery.sizeOf(context).width<760;
     return Scaffold(
       body:CustomScrollView(
         controller:_scrollController,
@@ -54,14 +61,14 @@ class _PortfolioPageState extends State<PortfolioPage>{
                     PopupMenuButton<String>(
                       icon:const Icon(Icons.menu_rounded),
                       color:const Color(0xFFF4EFE7),
-                      onSelected:(v){
-                        if(v=='about')go(about);
-                        if(v=='training')go(training);
-                        if(v=='projects')go(projects);
-                        if(v=='skills')go(skills);
-                        if(v=='contact')go(contact);
+                      onSelected:(value){
+                        if(value=='about')go(about);
+                        if(value=='training')go(training);
+                        if(value=='projects')go(projects);
+                        if(value=='skills')go(skills);
+                        if(value=='contact')go(contact);
                       },
-                      itemBuilder:(c)=>const [
+                      itemBuilder:(context)=>const [
                         PopupMenuItem(value:'about',child:Row(children:[Icon(Icons.person_outline,size:18),SizedBox(width:10),Text('About')])),
                         PopupMenuItem(value:'training',child:Row(children:[Icon(Icons.work_outline,size:18),SizedBox(width:10),Text('Training')])),
                         PopupMenuItem(value:'projects',child:Row(children:[Icon(Icons.grid_view_rounded,size:18),SizedBox(width:10),Text('Projects')])),
@@ -92,53 +99,11 @@ class _PortfolioPageState extends State<PortfolioPage>{
                       const SizedBox(height:70),
                       _Hero(onWork:()=>go(projects)),
                       const SizedBox(height:100),
-                      _Section(
-                        key:about,
-                        n:'01',
-                        title:'About',
-                        icon:Icons.person_outline,
-                        child:_About(scrollController:_scrollController),
-                      ),
-                      _Section(
-                        key:training,
-                        n:'02',
-                        title:'Training',
-                        icon:Icons.work_outline,
-                        child:_ScrollReveal(
-                          controller:_scrollController,
-                          animation:RevealAnimation.slideRight,
-                          child:const _Training(),
-                        ),
-                      ),
-                      _Section(
-                        key:projects,
-                        n:'03',
-                        title:'Projects',
-                        icon:Icons.grid_view_rounded,
-                        child:_Projects(scrollController:_scrollController),
-                      ),
-                      _Section(
-                        key:skills,
-                        n:'04',
-                        title:'Skills',
-                        icon:Icons.auto_awesome_outlined,
-                        child:_ScrollReveal(
-                          controller:_scrollController,
-                          animation:RevealAnimation.scaleFade,
-                          child:const _Skills(),
-                        ),
-                      ),
-                      _Section(
-                        key:contact,
-                        n:'05',
-                        title:'Contact',
-                        icon:Icons.mail_outline,
-                        child:_ScrollReveal(
-                          controller:_scrollController,
-                          animation:RevealAnimation.slideLeft,
-                          child:const _Contact(),
-                        ),
-                      ),
+                      _Section(key:about,n:'01',title:'About',icon:Icons.person_outline,child:_About(scrollController:_scrollController)),
+                      _Section(key:training,n:'02',title:'Training',icon:Icons.work_outline,child:_ScrollReveal(controller:_scrollController,animation:RevealAnimation.slideRight,child:const _Training())),
+                      _Section(key:projects,n:'03',title:'Projects',icon:Icons.grid_view_rounded,child:_Projects(scrollController:_scrollController)),
+                      _Section(key:skills,n:'04',title:'Skills',icon:Icons.auto_awesome_outlined,child:_ScrollReveal(controller:_scrollController,animation:RevealAnimation.scaleFade,child:const _Skills())),
+                      _Section(key:contact,n:'05',title:'Contact',icon:Icons.mail_outline,child:_ScrollReveal(controller:_scrollController,animation:RevealAnimation.slideLeft,child:const _Contact())),
                       const Divider(),
                       const Padding(padding:EdgeInsets.symmetric(vertical:26),child:Text('Fay Al-Mutairi  •  Information Technology  •  Saudi Arabia')),
                     ],
@@ -165,6 +130,7 @@ class _ScrollReveal extends StatefulWidget{
   final bool initiallyVisible;
 
   const _ScrollReveal({
+    super.key,
     required this.child,
     required this.controller,
     this.animation=RevealAnimation.slideUp,
@@ -174,13 +140,15 @@ class _ScrollReveal extends StatefulWidget{
     this.initiallyVisible=false,
   });
 
-  @override State<_ScrollReveal> createState()=>_ScrollRevealState();
+  @override
+  State<_ScrollReveal> createState()=>_ScrollRevealState();
 }
 
 class _ScrollRevealState extends State<_ScrollReveal> with SingleTickerProviderStateMixin{
   late final AnimationController _animationController;
-  late final Animation<double> _curve;
+  late Animation<double> _curve;
   bool _revealed=false;
+  bool _delayScheduled=false;
 
   @override
   void initState(){
@@ -199,14 +167,19 @@ class _ScrollRevealState extends State<_ScrollReveal> with SingleTickerProviderS
       oldWidget.controller.removeListener(_handleScroll);
       widget.controller.addListener(_handleScroll);
     }
+    if(oldWidget.duration!=widget.duration){
+      _animationController.duration=widget.duration;
+    }
   }
 
-  void _handleScroll()=>_checkVisibility();
+  void _handleScroll(){
+    _checkVisibility();
+  }
 
   void _checkVisibility(){
     if(!mounted||_revealed)return;
     final renderObject=context.findRenderObject();
-    if(renderObject is! RenderBox||!renderObject.hasSize)return;
+    if(renderObject is! RenderBox||!renderObject.attached||!renderObject.hasSize)return;
     final top=renderObject.localToGlobal(Offset.zero).dy;
     final bottom=top+renderObject.size.height;
     final viewportHeight=MediaQuery.sizeOf(context).height;
@@ -215,17 +188,13 @@ class _ScrollRevealState extends State<_ScrollReveal> with SingleTickerProviderS
       _revealed=true;
       if(widget.delay==Duration.zero){
         _animationController.forward();
-      }else{
-        Future.delayed(widget.delay,(){if(mounted)_animationController.forward();});
+      }else if(!_delayScheduled){
+        _delayScheduled=true;
+        Future.delayed(widget.delay,(){
+          if(mounted)_animationController.forward();
+        });
       }
     }
-  }
-
-  @override
-  void dispose(){
-    widget.controller.removeListener(_handleScroll);
-    _animationController.dispose();
-    super.dispose();
   }
 
   Offset _beginOffset(){
@@ -239,44 +208,50 @@ class _ScrollRevealState extends State<_ScrollReveal> with SingleTickerProviderS
   }
 
   @override
+  void dispose(){
+    widget.controller.removeListener(_handleScroll);
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context){
-    final offset=_beginOffset();
-    Widget child=widget.child;
+    final beginOffset=_beginOffset();
+    Widget animatedChild=widget.child;
     if(widget.animation==RevealAnimation.scaleFade){
-      child=ScaleTransition(scale:Tween<double>(begin:.97,end:1).animate(_curve),child:child);
-    }else if(offset!=Offset.zero){
-      child=SlideTransition(position:Tween<Offset>(begin:offset,end:Offset.zero).animate(_curve),child:child);
+      animatedChild=ScaleTransition(scale:Tween<double>(begin:.97,end:1).animate(_curve),child:animatedChild);
+    }else if(beginOffset!=Offset.zero){
+      animatedChild=SlideTransition(position:Tween<Offset>(begin:beginOffset,end:Offset.zero).animate(_curve),child:animatedChild);
     }
-    return FadeTransition(opacity:_curve,child:child);
+    return FadeTransition(opacity:_curve,child:animatedChild);
   }
 }
 
 class _Nav extends StatelessWidget{
-  final String t;
-  final VoidCallback f;
-  const _Nav(this.t,this.f);
-  @override Widget build(BuildContext c)=>TextButton(onPressed:f,child:Text(t,style:const TextStyle(color:Color(0xFF171717),fontWeight:FontWeight.w600)));
+  final String text;
+  final VoidCallback onPressed;
+  const _Nav(this.text,this.onPressed);
+  @override
+  Widget build(BuildContext context)=>TextButton(onPressed:onPressed,child:Text(text,style:const TextStyle(color:Color(0xFF171717),fontWeight:FontWeight.w600)));
 }
 
 class _Hero extends StatelessWidget{
   final VoidCallback onWork;
   const _Hero({required this.onWork});
   @override
-  Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){
-    final s=x.maxWidth<780;
+  Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){
+    final stacked=constraints.maxWidth<780;
     final text=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
       const Row(children:[Icon(Icons.code_rounded,size:16),SizedBox(width:8),Text('INFORMATION TECHNOLOGY',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,letterSpacing:2.2))]),
       const SizedBox(height:18),
-      FittedBox(fit:BoxFit.scaleDown,alignment:Alignment.centerLeft,child:Text('Fay Al-Mutairi',maxLines:1,style:TextStyle(fontSize:s?54:76,height:.98,fontWeight:FontWeight.w900,letterSpacing:-2.2))),
+      FittedBox(fit:BoxFit.scaleDown,alignment:Alignment.centerLeft,child:Text('Fay Al-Mutairi',maxLines:1,style:TextStyle(fontSize:stacked?54:76,height:.98,fontWeight:FontWeight.w900,letterSpacing:-2.2))),
       const SizedBox(height:24),
       const Text('IT graduate focused on data analytics, Flutter development and practical AI. My work combines hands-on training with projects built around real interfaces, datasets, APIs and software solutions.',style:TextStyle(fontSize:18,height:1.6,color:Color(0xFF504A43))),
       const SizedBox(height:28),
       FilledButton.icon(onPressed:onWork,icon:const Icon(Icons.arrow_downward_rounded,size:18),label:const Text('View my work'),style:FilledButton.styleFrom(backgroundColor:const Color(0xFF171717),padding:const EdgeInsets.symmetric(horizontal:24,vertical:17),shape:const RoundedRectangleBorder())),
     ]);
-    final image=Container(height:s?350:480,decoration:BoxDecoration(border:Border.all(color:const Color(0xFF171717))),child:Image.asset('assets/IMG_6645.PNG',fit:BoxFit.cover));
-    return s
-        ? Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:38),image])
-        : Row(children:[Expanded(flex:6,child:text),const SizedBox(width:55),Expanded(flex:4,child:image)]);
+    final image=Container(height:stacked?350:480,decoration:BoxDecoration(border:Border.all(color:const Color(0xFF171717))),child:Image.asset('assets/IMG_6645.PNG',fit:BoxFit.cover));
+    return stacked?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:38),image]):Row(children:[Expanded(flex:6,child:text),const SizedBox(width:55),Expanded(flex:4,child:image)]);
   });
 }
 
@@ -286,7 +261,7 @@ class _Section extends StatelessWidget{
   final Widget child;
   const _Section({super.key,required this.n,required this.title,required this.icon,required this.child});
   @override
-  Widget build(BuildContext c)=>Padding(
+  Widget build(BuildContext context)=>Padding(
     padding:const EdgeInsets.only(bottom:95),
     child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
       const Divider(),
@@ -306,15 +281,10 @@ class _About extends StatelessWidget{
   final ScrollController scrollController;
   const _About({required this.scrollController});
   @override
-  Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){
-    final mobile=x.maxWidth<760;
+  Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){
+    final mobile=constraints.maxWidth<760;
     final story=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-      _ScrollReveal(
-        controller:scrollController,
-        initiallyVisible:true,
-        animation:RevealAnimation.fade,
-        child:Text('I like turning ideas into clear, useful digital experiences.',style:TextStyle(fontSize:mobile?32:46,height:1.08,fontWeight:FontWeight.w900,letterSpacing:-1.2)),
-      ),
+      Text('I like turning ideas into clear, useful digital experiences.',style:TextStyle(fontSize:mobile?32:46,height:1.08,fontWeight:FontWeight.w900,letterSpacing:-1.2)),
       const SizedBox(height:22),
       const Text('I am an Information Technology graduate from Qassim University. My work sits between data, product thinking and development — from dashboards and data cleaning to Flutter applications, APIs, Firebase and practical AI.',style:TextStyle(fontSize:18,height:1.7,color:Color(0xFF4E4943))),
       const SizedBox(height:18),
@@ -323,7 +293,7 @@ class _About extends StatelessWidget{
       _ScrollReveal(
         controller:scrollController,
         animation:RevealAnimation.slideUp,
-        duration:const Duration(milliseconds:460),
+        duration:const Duration(milliseconds:420),
         child:const Wrap(spacing:10,runSpacing:10,children:[
           _AboutPill(Icons.insights_outlined,'Data Analytics'),
           _AboutPill(Icons.phone_iphone_rounded,'Flutter'),
@@ -336,7 +306,7 @@ class _About extends StatelessWidget{
     final visual=_ScrollReveal(
       controller:scrollController,
       animation:RevealAnimation.scaleFade,
-      duration:const Duration(milliseconds:560),
+      duration:const Duration(milliseconds:500),
       child:Container(
         height:mobile?330:430,
         decoration:BoxDecoration(color:const Color(0xFF171717),borderRadius:BorderRadius.circular(26)),
@@ -351,9 +321,7 @@ class _About extends StatelessWidget{
       ),
     );
 
-    return mobile
-        ? Column(crossAxisAlignment:CrossAxisAlignment.start,children:[story,const SizedBox(height:30),visual])
-        : Row(crossAxisAlignment:CrossAxisAlignment.center,children:[Expanded(flex:6,child:story),const SizedBox(width:52),Expanded(flex:5,child:visual)]);
+    return mobile?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[story,const SizedBox(height:30),visual]):Row(crossAxisAlignment:CrossAxisAlignment.center,children:[Expanded(flex:6,child:story),const SizedBox(width:52),Expanded(flex:5,child:visual)]);
   });
 }
 
@@ -361,7 +329,8 @@ class _AboutPill extends StatelessWidget{
   final IconData icon;
   final String text;
   const _AboutPill(this.icon,this.text);
-  @override Widget build(BuildContext c)=>Container(
+  @override
+  Widget build(BuildContext context)=>Container(
     padding:const EdgeInsets.symmetric(horizontal:14,vertical:10),
     decoration:BoxDecoration(border:Border.all(color:const Color(0xFF8E857A)),borderRadius:BorderRadius.circular(22)),
     child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icon,size:17),const SizedBox(width:8),Text(text,style:const TextStyle(fontWeight:FontWeight.w700))]),
@@ -370,7 +339,8 @@ class _AboutPill extends StatelessWidget{
 
 class _CoreNode extends StatelessWidget{
   const _CoreNode();
-  @override Widget build(BuildContext c)=>Container(
+  @override
+  Widget build(BuildContext context)=>Container(
     width:112,
     height:112,
     decoration:const BoxDecoration(shape:BoxShape.circle,color:Color(0xFFF4EFE7),boxShadow:[BoxShadow(color:Color(0x558E857A),blurRadius:34,spreadRadius:2)]),
@@ -382,7 +352,8 @@ class _SkillNode extends StatelessWidget{
   final String label;
   final IconData icon;
   const _SkillNode({required this.label,required this.icon});
-  @override Widget build(BuildContext c)=>Container(
+  @override
+  Widget build(BuildContext context)=>Container(
     padding:const EdgeInsets.symmetric(horizontal:13,vertical:10),
     decoration:BoxDecoration(color:const Color(0xFF2A2927),borderRadius:BorderRadius.circular(20),border:Border.all(color:const Color(0xFF4A4844))),
     child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icon,size:16,color:const Color(0xFFF4EFE7)),const SizedBox(width:7),Text(label,style:const TextStyle(color:Color(0xFFF4EFE7),fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.1))]),
@@ -392,38 +363,27 @@ class _SkillNode extends StatelessWidget{
 class _OrbitPainter extends CustomPainter{
   @override
   void paint(Canvas canvas,Size size){
-    final p1=Paint()..color=const Color(0xFF5A5651)..strokeWidth=1.2..style=PaintingStyle.stroke;
+    final primary=Paint()..color=const Color(0xFF5A5651)..strokeWidth=1.2..style=PaintingStyle.stroke;
     final center=Offset(size.width/2,size.height/2);
-    canvas.drawCircle(center,size.shortestSide*.28,p1);
-    final p2=Paint()..color=const Color(0xFF343230)..strokeWidth=1.2..style=PaintingStyle.stroke;
-    canvas.drawCircle(center,size.shortestSide*.39,p2);
+    canvas.drawCircle(center,size.shortestSide*.28,primary);
+    final secondary=Paint()..color=const Color(0xFF343230)..strokeWidth=1.2..style=PaintingStyle.stroke;
+    canvas.drawCircle(center,size.shortestSide*.39,secondary);
     final line=Paint()..color=const Color(0xFF4A4742)..strokeWidth=1;
     canvas.drawLine(center,Offset(size.width*.18,size.height*.18),line);
     canvas.drawLine(center,Offset(size.width*.82,size.height*.22),line);
     canvas.drawLine(center,Offset(size.width*.2,size.height*.78),line);
     canvas.drawLine(center,Offset(size.width*.82,size.height*.8),line);
   }
-  @override bool shouldRepaint(covariant CustomPainter oldDelegate)=>false;
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate)=>false;
 }
 
 class _Training extends StatelessWidget{
   const _Training();
-  @override Widget build(BuildContext c)=>const Column(children:[
-    _TrainingCard(
-      title:'Data Analysis Intern',
-      place:'Al Qassim Municipality • Data Management & Statistics Office',
-      period:'June – August 2025',
-      body:'Completed an 8-week cooperative training program in a government data environment. Worked on cleaning and validating 750+ municipal records, reviewing data quality and inconsistencies, and supporting KPI reporting. Built analytical dashboards with Power BI and Excel for quarterly comparisons and clearer decision-support reporting. Internal datasets and work samples are not displayed because the training was completed within a government entity.',
-      tags:['Power BI','Excel','Data Cleaning','Data Validation','KPI Reporting','Data Visualization'],
-      image:'assets/projects/training.png',
-    ),
-    _TrainingCard(
-      title:'Application Development Intern',
-      place:'Kharja • Startup',
-      period:'February – May 2024',
-      body:'Worked in application development using Flutter and Dart, with Firebase for authentication, database and backend-connected services. The training strengthened my understanding of UI/UX implementation, mobile application structure, software-development workflow and turning interface concepts into functional application screens.',
-      tags:['Flutter','Dart','Firebase','UI/UX','Mobile Development','Git'],
-    ),
+  @override
+  Widget build(BuildContext context)=>const Column(children:[
+    _TrainingCard(title:'Data Analysis Intern',place:'Al Qassim Municipality • Data Management & Statistics Office',period:'June – August 2025',body:'Completed an 8-week cooperative training program in a government data environment. Worked on cleaning and validating 750+ municipal records, reviewing data quality and inconsistencies, and supporting KPI reporting. Built analytical dashboards with Power BI and Excel for quarterly comparisons and clearer decision-support reporting. Internal datasets and work samples are not displayed because the training was completed within a government entity.',tags:['Power BI','Excel','Data Cleaning','Data Validation','KPI Reporting','Data Visualization'],image:'assets/projects/training.png'),
+    _TrainingCard(title:'Application Development Intern',place:'Kharja • Startup',period:'February – May 2024',body:'Worked in application development using Flutter and Dart, with Firebase for authentication, database and backend-connected services. The training strengthened my understanding of UI/UX implementation, mobile application structure, software-development workflow and turning interface concepts into functional application screens.',tags:['Flutter','Dart','Firebase','UI/UX','Mobile Development','Git']),
   ]);
 }
 
@@ -433,12 +393,12 @@ class _TrainingCard extends StatelessWidget{
   final String? image;
   const _TrainingCard({required this.title,required this.place,required this.period,required this.body,required this.tags,this.image});
   @override
-  Widget build(BuildContext c)=>Container(
+  Widget build(BuildContext context)=>Container(
     width:double.infinity,
     padding:const EdgeInsets.symmetric(vertical:30),
     decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFBDB4A8)))),
-    child:LayoutBuilder(builder:(c,x){
-      final compact=x.maxWidth<760;
+    child:LayoutBuilder(builder:(context,constraints){
+      final compact=constraints.maxWidth<760;
       final text=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
         Text(title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w800)),
         const SizedBox(height:6),
@@ -450,10 +410,8 @@ class _TrainingCard extends StatelessWidget{
         Wrap(spacing:8,runSpacing:8,children:tags.map((e)=>_Tag(e)).toList()),
       ]);
       if(image==null)return text;
-      final cert=Container(height:compact?170:190,width:double.infinity,padding:const EdgeInsets.all(10),color:Colors.white,child:Image.asset(image!,fit:BoxFit.contain));
-      return compact
-          ? Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:20),cert])
-          : Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(flex:7,child:text),const SizedBox(width:28),Expanded(flex:3,child:cert)]);
+      final certificate=Container(height:compact?170:190,width:double.infinity,padding:const EdgeInsets.all(10),color:Colors.white,child:Image.asset(image!,fit:BoxFit.contain));
+      return compact?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:20),certificate]):Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(flex:7,child:text),const SizedBox(width:28),Expanded(flex:3,child:certificate)]);
     }),
   );
 }
@@ -461,7 +419,8 @@ class _TrainingCard extends StatelessWidget{
 class _Projects extends StatefulWidget{
   final ScrollController scrollController;
   const _Projects({required this.scrollController});
-  @override State<_Projects> createState()=>_ProjectsState();
+  @override
+  State<_Projects> createState()=>_ProjectsState();
 }
 
 class _ProjectsState extends State<_Projects>{
@@ -478,7 +437,7 @@ class _ProjectsState extends State<_Projects>{
   ];
 
   @override
-  Widget build(BuildContext c){
+  Widget build(BuildContext context){
     const filters=['All','Data Analytics','Flutter & Mobile','AI','Web & Database'];
     final shown=filter=='All'?items:items.where((e)=>e.category==filter).toList();
     return Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
@@ -486,21 +445,22 @@ class _ProjectsState extends State<_Projects>{
       const SizedBox(height:18),
       Wrap(spacing:9,runSpacing:9,children:filters.map((e)=>ChoiceChip(label:Text(e),selected:filter==e,onSelected:(_)=>setState(()=>filter=e),selectedColor:const Color(0xFF171717),labelStyle:TextStyle(color:filter==e?Colors.white:const Color(0xFF171717)))).toList()),
       const SizedBox(height:30),
-      LayoutBuilder(builder:(c,x){
-        final w=x.maxWidth<700?x.maxWidth:(x.maxWidth-20)/2;
+      LayoutBuilder(builder:(context,constraints){
+        final width=constraints.maxWidth<700?constraints.maxWidth:(constraints.maxWidth-20)/2;
         return Wrap(
           spacing:20,
           runSpacing:20,
           children:shown.asMap().entries.map((entry){
-            final stagger=(entry.key%4)*70;
+            final delay=Duration(milliseconds:(entry.key%4)*70);
             return SizedBox(
-              width:w,
+              width:width,
               child:_ScrollReveal(
                 key:ValueKey('${filter}_${entry.value.title}'),
                 controller:widget.scrollController,
                 animation:RevealAnimation.slideUp,
                 duration:const Duration(milliseconds:460),
-                delay:Duration(milliseconds:stagger),
+                delay:delay,
+                triggerFraction:.92,
                 child:_ProjectCard(entry.value),
               ),
             );
@@ -517,54 +477,57 @@ class _Project{
   const _Project(this.title,this.category,this.type,this.description,this.tags,this.images);
 }
 
-class _ProjectCard extends StatelessWidget{
-  final _Project p;
-  const _ProjectCard(this.p);
-
+class _ProjectCard extends StatefulWidget{
+  final _Project project;
+  const _ProjectCard(this.project);
   @override
-  Widget build(BuildContext c){
-    final cover=p.images.isNotEmpty?p.images.first:null;
-    return Material(
-      color:const Color(0xFFE9E1D6),
-      child:InkWell(
-        onTap:()=>Navigator.of(c).push(MaterialPageRoute(builder:(_)=>_ProjectDetails(p))),
-        child:Container(
-          decoration:BoxDecoration(border:Border.all(color:const Color(0xFFBDB4A8))),
-          child:Column(
-            crossAxisAlignment:CrossAxisAlignment.start,
-            children:[
-              if(cover!=null)
-                Container(
-                  height:185,
-                  width:double.infinity,
-                  color:const Color(0xFFF8F5F0),
-                  padding:const EdgeInsets.all(14),
-                  child:Image.asset(cover,fit:BoxFit.contain),
-                ),
-              Padding(
-                padding:const EdgeInsets.all(22),
-                child:Column(
-                  crossAxisAlignment:CrossAxisAlignment.start,
-                  children:[
-                    Row(children:[
-                      const Icon(Icons.folder_open_outlined,size:16),
-                      const SizedBox(width:7),
-                      Text(p.category.toUpperCase(),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.4)),
-                    ]),
+  State<_ProjectCard> createState()=>_ProjectCardState();
+}
+
+class _ProjectCardState extends State<_ProjectCard>{
+  bool hovered=false;
+  @override
+  Widget build(BuildContext context){
+    final project=widget.project;
+    final cover=project.images.isNotEmpty?project.images.first:null;
+    return MouseRegion(
+      onEnter:(_)=>setState(()=>hovered=true),
+      onExit:(_)=>setState(()=>hovered=false),
+      child:AnimatedContainer(
+        duration:const Duration(milliseconds:180),
+        curve:Curves.easeOut,
+        transform:Matrix4.translationValues(0,hovered?-5:0,0),
+        decoration:BoxDecoration(boxShadow:hovered?const [BoxShadow(color:Color(0x18000000),blurRadius:22,offset:Offset(0,12))]:const []),
+        child:Material(
+          color:const Color(0xFFE9E1D6),
+          child:InkWell(
+            onTap:()=>Navigator.of(context).push(MaterialPageRoute(builder:(_)=>_ProjectDetails(project))),
+            child:Container(
+              decoration:BoxDecoration(border:Border.all(color:const Color(0xFFBDB4A8))),
+              child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                if(cover!=null)
+                  ClipRect(
+                    child:AnimatedScale(
+                      scale:hovered?1.025:1,
+                      duration:const Duration(milliseconds:220),
+                      curve:Curves.easeOut,
+                      child:Container(height:185,width:double.infinity,color:const Color(0xFFF8F5F0),padding:const EdgeInsets.all(14),child:Image.asset(cover,fit:BoxFit.contain)),
+                    ),
+                  ),
+                Padding(
+                  padding:const EdgeInsets.all(22),
+                  child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                    Row(children:[const Icon(Icons.folder_open_outlined,size:16),const SizedBox(width:7),Text(project.category.toUpperCase(),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.4))]),
                     const SizedBox(height:12),
-                    Text(p.title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w900)),
+                    Text(project.title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w900)),
                     const SizedBox(height:6),
-                    Text(p.type,style:const TextStyle(color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),
+                    Text(project.type,style:const TextStyle(color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),
                     const SizedBox(height:16),
-                    const Row(children:[
-                      Text('View project',style:TextStyle(fontWeight:FontWeight.w700)),
-                      SizedBox(width:6),
-                      Icon(Icons.arrow_forward,size:17),
-                    ]),
-                  ],
+                    const Row(children:[Text('View project',style:TextStyle(fontWeight:FontWeight.w700)),SizedBox(width:6),Icon(Icons.arrow_forward,size:17)]),
+                  ]),
                 ),
-              ),
-            ],
+              ]),
+            ),
           ),
         ),
       ),
@@ -573,24 +536,32 @@ class _ProjectCard extends StatelessWidget{
 }
 
 class _ProjectDetails extends StatefulWidget{
-  final _Project p;
-  const _ProjectDetails(this.p);
-  @override State<_ProjectDetails> createState()=>_ProjectDetailsState();
+  final _Project project;
+  const _ProjectDetails(this.project);
+  @override
+  State<_ProjectDetails> createState()=>_ProjectDetailsState();
 }
 
 class _ProjectDetailsState extends State<_ProjectDetails>{
-  late final PageController pc;
+  late final PageController pageController;
   int current=0;
-  @override void initState(){super.initState();pc=PageController(viewportFraction:.7);}
-  @override void dispose(){pc.dispose();super.dispose();}
-
   @override
-  Widget build(BuildContext c){
-    final p=widget.p;
-    final phone=p.images.length>1&&(p.title=='Anees'||p.title=='Real Estate App'||p.title=='Kharja');
+  void initState(){
+    super.initState();
+    pageController=PageController(viewportFraction:.7);
+  }
+  @override
+  void dispose(){
+    pageController.dispose();
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context){
+    final project=widget.project;
+    final phone=project.images.length>1&&(project.title=='Anees'||project.title=='Real Estate App'||project.title=='Kharja');
     return Scaffold(
       backgroundColor:const Color(0xFFF4EFE7),
-      appBar:AppBar(backgroundColor:const Color(0xFFF4EFE7),surfaceTintColor:Colors.transparent,title:Text(p.title,style:const TextStyle(fontWeight:FontWeight.w800))),
+      appBar:AppBar(backgroundColor:const Color(0xFFF4EFE7),surfaceTintColor:Colors.transparent,title:Text(project.title,style:const TextStyle(fontWeight:FontWeight.w800))),
       body:SingleChildScrollView(
         child:Center(
           child:ConstrainedBox(
@@ -598,24 +569,22 @@ class _ProjectDetailsState extends State<_ProjectDetails>{
             child:Padding(
               padding:const EdgeInsets.fromLTRB(24,36,24,70),
               child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                Text(p.category.toUpperCase(),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w800,letterSpacing:1.8)),
+                Text(project.category.toUpperCase(),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w800,letterSpacing:1.8)),
                 const SizedBox(height:12),
-                Text(p.title,style:const TextStyle(fontSize:48,height:1,fontWeight:FontWeight.w900,letterSpacing:-1.5)),
+                Text(project.title,style:const TextStyle(fontSize:48,height:1,fontWeight:FontWeight.w900,letterSpacing:-1.5)),
                 const SizedBox(height:10),
-                Text(p.type,style:const TextStyle(fontSize:17,color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),
+                Text(project.type,style:const TextStyle(fontSize:17,color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),
                 const SizedBox(height:28),
-                Text(p.description,style:const TextStyle(fontSize:18,height:1.75,color:Color(0xFF413C36))),
+                Text(project.description,style:const TextStyle(fontSize:18,height:1.75,color:Color(0xFF413C36))),
                 const SizedBox(height:24),
-                Wrap(spacing:8,runSpacing:8,children:p.tags.map((e)=>_Tag(e)).toList()),
-                if(p.images.isNotEmpty)...[
+                Wrap(spacing:8,runSpacing:8,children:project.tags.map((e)=>_Tag(e)).toList()),
+                if(project.images.isNotEmpty)...[
                   const SizedBox(height:42),
                   const Divider(),
                   const SizedBox(height:22),
                   const Text('Project Gallery',style:TextStyle(fontSize:24,fontWeight:FontWeight.w900)),
                   const SizedBox(height:18),
-                  phone
-                      ? _PhoneCarousel(images:p.images,controller:pc,current:current,onChanged:(i)=>setState(()=>current=i))
-                      : _DetailsGallery(p.images),
+                  phone?_PhoneCarousel(images:project.images,controller:pageController,current:current,onChanged:(index)=>setState(()=>current=index)):_DetailsGallery(project.images),
                 ],
               ]),
             ),
@@ -633,7 +602,7 @@ class _PhoneCarousel extends StatelessWidget{
   final ValueChanged<int> onChanged;
   const _PhoneCarousel({required this.images,required this.controller,required this.current,required this.onChanged});
   @override
-  Widget build(BuildContext c)=>Column(children:[
+  Widget build(BuildContext context)=>Column(children:[
     SizedBox(
       height:520,
       child:PageView.builder(
@@ -641,27 +610,21 @@ class _PhoneCarousel extends StatelessWidget{
         itemCount:images.length,
         onPageChanged:onChanged,
         physics:const BouncingScrollPhysics(),
-        itemBuilder:(c,i){
-          final active=i==current;
+        itemBuilder:(context,index){
+          final active=index==current;
           return AnimatedScale(
             scale:active?1:.88,
             duration:const Duration(milliseconds:260),
             curve:Curves.easeOut,
-            child:AnimatedOpacity(opacity:active?1:.55,duration:const Duration(milliseconds:260),child:Center(child:_PhoneFrame(image:images[i]))),
+            child:AnimatedOpacity(opacity:active?1:.55,duration:const Duration(milliseconds:260),child:Center(child:_PhoneFrame(image:images[index]))),
           );
         },
       ),
     ),
     const SizedBox(height:14),
-    Row(mainAxisAlignment:MainAxisAlignment.center,children:List.generate(images.length,(i){
-      final active=i==current;
-      return AnimatedContainer(
-        duration:const Duration(milliseconds:220),
-        margin:const EdgeInsets.symmetric(horizontal:4),
-        width:active?24:7,
-        height:7,
-        decoration:BoxDecoration(color:active?const Color(0xFF171717):const Color(0xFFBDB4A8),borderRadius:BorderRadius.circular(20)),
-      );
+    Row(mainAxisAlignment:MainAxisAlignment.center,children:List.generate(images.length,(index){
+      final active=index==current;
+      return AnimatedContainer(duration:const Duration(milliseconds:220),margin:const EdgeInsets.symmetric(horizontal:4),width:active?24:7,height:7,decoration:BoxDecoration(color:active?const Color(0xFF171717):const Color(0xFFBDB4A8),borderRadius:BorderRadius.circular(20)));
     })),
   ]);
 }
@@ -670,7 +633,7 @@ class _PhoneFrame extends StatelessWidget{
   final String image;
   const _PhoneFrame({required this.image});
   @override
-  Widget build(BuildContext c)=>Container(
+  Widget build(BuildContext context)=>Container(
     width:245,
     height:500,
     padding:const EdgeInsets.all(9),
@@ -686,25 +649,27 @@ class _DetailsGallery extends StatelessWidget{
   final List<String> images;
   const _DetailsGallery(this.images);
   @override
-  Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){
+  Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){
     if(images.length==1){
       return Center(child:ConstrainedBox(constraints:const BoxConstraints(maxHeight:520,maxWidth:900),child:Container(width:double.infinity,padding:const EdgeInsets.all(16),color:Colors.white,child:Image.asset(images.first,fit:BoxFit.contain))));
     }
-    final mobile=x.maxWidth<700;
-    final w=mobile?x.maxWidth:(x.maxWidth-16)/2;
-    return Wrap(spacing:16,runSpacing:16,children:images.map((img)=>Container(width:w,height:300,padding:const EdgeInsets.all(14),color:Colors.white,child:Image.asset(img,fit:BoxFit.contain))).toList());
+    final mobile=constraints.maxWidth<700;
+    final width=mobile?constraints.maxWidth:(constraints.maxWidth-16)/2;
+    return Wrap(spacing:16,runSpacing:16,children:images.map((image)=>Container(width:width,height:300,padding:const EdgeInsets.all(14),color:Colors.white,child:Image.asset(image,fit:BoxFit.contain))).toList());
   });
 }
 
 class _Tag extends StatelessWidget{
-  final String t;
-  const _Tag(this.t);
-  @override Widget build(BuildContext c)=>Container(padding:const EdgeInsets.symmetric(horizontal:10,vertical:6),decoration:BoxDecoration(border:Border.all(color:const Color(0xFF8E857A))),child:Text(t,style:const TextStyle(fontSize:12,fontWeight:FontWeight.w600)));
+  final String text;
+  const _Tag(this.text);
+  @override
+  Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(horizontal:10,vertical:6),decoration:BoxDecoration(border:Border.all(color:const Color(0xFF8E857A))),child:Text(text,style:const TextStyle(fontSize:12,fontWeight:FontWeight.w600)));
 }
 
 class _Skills extends StatelessWidget{
   const _Skills();
-  @override Widget build(BuildContext c)=>const Wrap(spacing:45,runSpacing:35,children:[
+  @override
+  Widget build(BuildContext context)=>const Wrap(spacing:45,runSpacing:35,children:[
     _Skill('Data Analytics',['Power BI','Tableau','Excel','Python','SQL','Data Cleaning','KPI Reporting'],Icons.insights_outlined),
     _Skill('Development',['Flutter','Flutter Web','Dart','Firebase','Git','APIs'],Icons.devices_outlined),
     _Skill('AI & Database',['Machine Learning','Deep Learning','Emotion Recognition','Database Design','Data Modeling'],Icons.memory_outlined),
@@ -712,22 +677,24 @@ class _Skills extends StatelessWidget{
 }
 
 class _Skill extends StatelessWidget{
-  final String t;
-  final List<String> x;
+  final String title;
+  final List<String> items;
   final IconData icon;
-  const _Skill(this.t,this.x,this.icon);
-  @override Widget build(BuildContext c)=>SizedBox(width:300,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+  const _Skill(this.title,this.items,this.icon);
+  @override
+  Widget build(BuildContext context)=>SizedBox(width:300,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
     Container(width:40,height:40,decoration:BoxDecoration(border:Border.all(color:const Color(0xFF171717)),borderRadius:BorderRadius.circular(10)),child:Icon(icon,size:20)),
     const SizedBox(height:14),
-    Text(t,style:const TextStyle(fontSize:20,fontWeight:FontWeight.w800)),
+    Text(title,style:const TextStyle(fontSize:20,fontWeight:FontWeight.w800)),
     const SizedBox(height:12),
-    Text(x.join('  •  '),style:const TextStyle(fontSize:15,height:1.8,color:Color(0xFF4E4943))),
+    Text(items.join('  •  '),style:const TextStyle(fontSize:15,height:1.8,color:Color(0xFF4E4943))),
   ]));
 }
 
 class _Contact extends StatelessWidget{
   const _Contact();
-  @override Widget build(BuildContext c)=>const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+  @override
+  Widget build(BuildContext context)=>const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
     Text('Open to opportunities in data analytics, application development and practical technology projects.',style:TextStyle(fontSize:25,height:1.45,fontWeight:FontWeight.w800)),
     SizedBox(height:28),
     _ContactLine(Icons.phone_outlined,'Phone','0530460609'),
@@ -739,7 +706,8 @@ class _Contact extends StatelessWidget{
 
 class _ContactLine extends StatelessWidget{
   final IconData icon;
-  final String a,b;
-  const _ContactLine(this.icon,this.a,this.b);
-  @override Widget build(BuildContext c)=>Padding(padding:const EdgeInsets.symmetric(vertical:9),child:Wrap(crossAxisAlignment:WrapCrossAlignment.center,spacing:12,children:[Icon(icon,size:18),SizedBox(width:85,child:Text(a,style:const TextStyle(fontWeight:FontWeight.w800))),SelectableText(b)]));
+  final String label,value;
+  const _ContactLine(this.icon,this.label,this.value);
+  @override
+  Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.symmetric(vertical:9),child:Wrap(crossAxisAlignment:WrapCrossAlignment.center,spacing:12,children:[Icon(icon,size:18),SizedBox(width:85,child:Text(label,style:const TextStyle(fontWeight:FontWeight.w800))),SelectableText(value)]));
 }
