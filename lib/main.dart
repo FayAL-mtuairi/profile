@@ -24,13 +24,25 @@ class PortfolioPage extends StatefulWidget{
 
 class _PortfolioPageState extends State<PortfolioPage>{
   final about=GlobalKey(),training=GlobalKey(),projects=GlobalKey(),skills=GlobalKey(),contact=GlobalKey();
-  void go(GlobalKey k){final c=k.currentContext;if(c!=null)Scrollable.ensureVisible(c,duration:const Duration(milliseconds:520),curve:Curves.easeOutCubic);}
+  final ScrollController _scrollController=ScrollController();
+
+  void go(GlobalKey k){
+    final c=k.currentContext;
+    if(c!=null)Scrollable.ensureVisible(c,duration:const Duration(milliseconds:520),curve:Curves.easeOutCubic);
+  }
+
+  @override
+  void dispose(){
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext c){
     final mobile=MediaQuery.sizeOf(c).width<760;
     return Scaffold(
       body:CustomScrollView(
+        controller:_scrollController,
         slivers:[
           SliverAppBar(
             pinned:true,
@@ -80,11 +92,53 @@ class _PortfolioPageState extends State<PortfolioPage>{
                       const SizedBox(height:70),
                       _Hero(onWork:()=>go(projects)),
                       const SizedBox(height:100),
-                      _Section(key:about,n:'01',title:'About',icon:Icons.person_outline,child:const _ScrollReveal(child:_About())),
-                      _Section(key:training,n:'02',title:'Training',icon:Icons.work_outline,child:const _Training()),
-                      _Section(key:projects,n:'03',title:'Projects',icon:Icons.grid_view_rounded,child:const _Projects()),
-                      _Section(key:skills,n:'04',title:'Skills',icon:Icons.auto_awesome_outlined,child:const _Skills()),
-                      _Section(key:contact,n:'05',title:'Contact',icon:Icons.mail_outline,child:const _Contact()),
+                      _Section(
+                        key:about,
+                        n:'01',
+                        title:'About',
+                        icon:Icons.person_outline,
+                        child:_About(scrollController:_scrollController),
+                      ),
+                      _Section(
+                        key:training,
+                        n:'02',
+                        title:'Training',
+                        icon:Icons.work_outline,
+                        child:_ScrollReveal(
+                          controller:_scrollController,
+                          animation:RevealAnimation.slideRight,
+                          child:const _Training(),
+                        ),
+                      ),
+                      _Section(
+                        key:projects,
+                        n:'03',
+                        title:'Projects',
+                        icon:Icons.grid_view_rounded,
+                        child:_Projects(scrollController:_scrollController),
+                      ),
+                      _Section(
+                        key:skills,
+                        n:'04',
+                        title:'Skills',
+                        icon:Icons.auto_awesome_outlined,
+                        child:_ScrollReveal(
+                          controller:_scrollController,
+                          animation:RevealAnimation.scaleFade,
+                          child:const _Skills(),
+                        ),
+                      ),
+                      _Section(
+                        key:contact,
+                        n:'05',
+                        title:'Contact',
+                        icon:Icons.mail_outline,
+                        child:_ScrollReveal(
+                          controller:_scrollController,
+                          animation:RevealAnimation.slideLeft,
+                          child:const _Contact(),
+                        ),
+                      ),
                       const Divider(),
                       const Padding(padding:EdgeInsets.symmetric(vertical:26),child:Text('Fay Al-Mutairi  •  Information Technology  •  Saudi Arabia')),
                     ],
@@ -99,51 +153,102 @@ class _PortfolioPageState extends State<PortfolioPage>{
   }
 }
 
+enum RevealAnimation{fade,slideUp,slideLeft,slideRight,scaleFade}
+
 class _ScrollReveal extends StatefulWidget{
   final Widget child;
-  const _ScrollReveal({required this.child});
+  final ScrollController controller;
+  final RevealAnimation animation;
+  final Duration duration;
+  final Duration delay;
+  final double triggerFraction;
+  final bool initiallyVisible;
+
+  const _ScrollReveal({
+    required this.child,
+    required this.controller,
+    this.animation=RevealAnimation.slideUp,
+    this.duration=const Duration(milliseconds:520),
+    this.delay=Duration.zero,
+    this.triggerFraction=.9,
+    this.initiallyVisible=false,
+  });
+
   @override State<_ScrollReveal> createState()=>_ScrollRevealState();
 }
 
 class _ScrollRevealState extends State<_ScrollReveal> with SingleTickerProviderStateMixin{
-  late final AnimationController controller;
-  late final Animation<double> fade;
-  late final Animation<Offset> slide;
-  bool started=false;
+  late final AnimationController _animationController;
+  late final Animation<double> _curve;
+  bool _revealed=false;
 
   @override
   void initState(){
     super.initState();
-    controller=AnimationController(vsync:this,duration:const Duration(milliseconds:720));
-    fade=CurvedAnimation(parent:controller,curve:Curves.easeOut);
-    slide=Tween<Offset>(begin:const Offset(0,.09),end:Offset.zero).animate(CurvedAnimation(parent:controller,curve:Curves.easeOutCubic));
-    WidgetsBinding.instance.addPostFrameCallback((_)=>_check());
+    _animationController=AnimationController(vsync:this,duration:widget.duration,value:widget.initiallyVisible?1:0);
+    _curve=CurvedAnimation(parent:_animationController,curve:Curves.easeOutCubic);
+    _revealed=widget.initiallyVisible;
+    widget.controller.addListener(_handleScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_)=>_checkVisibility());
   }
 
-  void _check(){
-    if(!mounted||started)return;
-    final box=context.findRenderObject();
-    if(box is RenderBox){
-      final top=box.localToGlobal(Offset.zero).dy;
-      final h=MediaQuery.sizeOf(context).height;
-      if(top<h*.88){
-        started=true;
-        controller.forward();
+  @override
+  void didUpdateWidget(covariant _ScrollReveal oldWidget){
+    super.didUpdateWidget(oldWidget);
+    if(oldWidget.controller!=widget.controller){
+      oldWidget.controller.removeListener(_handleScroll);
+      widget.controller.addListener(_handleScroll);
+    }
+  }
+
+  void _handleScroll()=>_checkVisibility();
+
+  void _checkVisibility(){
+    if(!mounted||_revealed)return;
+    final renderObject=context.findRenderObject();
+    if(renderObject is! RenderBox||!renderObject.hasSize)return;
+    final top=renderObject.localToGlobal(Offset.zero).dy;
+    final bottom=top+renderObject.size.height;
+    final viewportHeight=MediaQuery.sizeOf(context).height;
+    final trigger=viewportHeight*widget.triggerFraction;
+    if(bottom>0&&top<trigger){
+      _revealed=true;
+      if(widget.delay==Duration.zero){
+        _animationController.forward();
+      }else{
+        Future.delayed(widget.delay,(){if(mounted)_animationController.forward();});
       }
     }
   }
 
   @override
-  Widget build(BuildContext context){
-    WidgetsBinding.instance.addPostFrameCallback((_)=>_check());
-    return NotificationListener<ScrollNotification>(
-      onNotification:(_){_check();return false;},
-      child:FadeTransition(opacity:fade,child:SlideTransition(position:slide,child:widget.child)),
-    );
+  void dispose(){
+    widget.controller.removeListener(_handleScroll);
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  Offset _beginOffset(){
+    switch(widget.animation){
+      case RevealAnimation.slideLeft:return const Offset(-.08,0);
+      case RevealAnimation.slideRight:return const Offset(.08,0);
+      case RevealAnimation.slideUp:return const Offset(0,.08);
+      case RevealAnimation.fade:
+      case RevealAnimation.scaleFade:return Offset.zero;
+    }
   }
 
   @override
-  void dispose(){controller.dispose();super.dispose();}
+  Widget build(BuildContext context){
+    final offset=_beginOffset();
+    Widget child=widget.child;
+    if(widget.animation==RevealAnimation.scaleFade){
+      child=ScaleTransition(scale:Tween<double>(begin:.97,end:1).animate(_curve),child:child);
+    }else if(offset!=Offset.zero){
+      child=SlideTransition(position:Tween<Offset>(begin:offset,end:Offset.zero).animate(_curve),child:child);
+    }
+    return FadeTransition(opacity:_curve,child:child);
+  }
 }
 
 class _Nav extends StatelessWidget{
@@ -198,36 +303,52 @@ class _Section extends StatelessWidget{
 }
 
 class _About extends StatelessWidget{
-  const _About();
+  final ScrollController scrollController;
+  const _About({required this.scrollController});
   @override
   Widget build(BuildContext c)=>LayoutBuilder(builder:(c,x){
     final mobile=x.maxWidth<760;
     final story=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-      Text('I like turning ideas into clear, useful digital experiences.',style:TextStyle(fontSize:mobile?32:46,height:1.08,fontWeight:FontWeight.w900,letterSpacing:-1.2)),
+      _ScrollReveal(
+        controller:scrollController,
+        initiallyVisible:true,
+        animation:RevealAnimation.fade,
+        child:Text('I like turning ideas into clear, useful digital experiences.',style:TextStyle(fontSize:mobile?32:46,height:1.08,fontWeight:FontWeight.w900,letterSpacing:-1.2)),
+      ),
       const SizedBox(height:22),
       const Text('I am an Information Technology graduate from Qassim University. My work sits between data, product thinking and development — from dashboards and data cleaning to Flutter applications, APIs, Firebase and practical AI.',style:TextStyle(fontSize:18,height:1.7,color:Color(0xFF4E4943))),
       const SizedBox(height:18),
       const Text('What matters to me is not just making something work, but making it understandable, organized and pleasant to use.',style:TextStyle(fontSize:18,height:1.7,color:Color(0xFF4E4943))),
       const SizedBox(height:28),
-      const Wrap(spacing:10,runSpacing:10,children:[
-        _AboutPill(Icons.insights_outlined,'Data Analytics'),
-        _AboutPill(Icons.phone_iphone_rounded,'Flutter'),
-        _AboutPill(Icons.memory_outlined,'Practical AI'),
-        _AboutPill(Icons.design_services_outlined,'UI thinking'),
-      ]),
+      _ScrollReveal(
+        controller:scrollController,
+        animation:RevealAnimation.slideUp,
+        duration:const Duration(milliseconds:460),
+        child:const Wrap(spacing:10,runSpacing:10,children:[
+          _AboutPill(Icons.insights_outlined,'Data Analytics'),
+          _AboutPill(Icons.phone_iphone_rounded,'Flutter'),
+          _AboutPill(Icons.memory_outlined,'Practical AI'),
+          _AboutPill(Icons.design_services_outlined,'UI thinking'),
+        ]),
+      ),
     ]);
 
-    final visual=Container(
-      height:mobile?330:430,
-      decoration:BoxDecoration(color:const Color(0xFF171717),borderRadius:BorderRadius.circular(26)),
-      child:Stack(children:[
-        Positioned.fill(child:CustomPaint(painter:_OrbitPainter())),
-        const Align(alignment:Alignment.center,child:_CoreNode()),
-        const Positioned(top:52,left:48,child:_SkillNode(label:'DATA',icon:Icons.bar_chart_rounded)),
-        const Positioned(top:72,right:42,child:_SkillNode(label:'FLUTTER',icon:Icons.phone_android_rounded)),
-        const Positioned(bottom:62,left:58,child:_SkillNode(label:'AI',icon:Icons.auto_awesome_rounded)),
-        const Positioned(bottom:48,right:52,child:_SkillNode(label:'UX',icon:Icons.draw_outlined)),
-      ]),
+    final visual=_ScrollReveal(
+      controller:scrollController,
+      animation:RevealAnimation.scaleFade,
+      duration:const Duration(milliseconds:560),
+      child:Container(
+        height:mobile?330:430,
+        decoration:BoxDecoration(color:const Color(0xFF171717),borderRadius:BorderRadius.circular(26)),
+        child:Stack(children:[
+          Positioned.fill(child:CustomPaint(painter:_OrbitPainter())),
+          const Align(alignment:Alignment.center,child:_CoreNode()),
+          const Positioned(top:52,left:48,child:_SkillNode(label:'DATA',icon:Icons.bar_chart_rounded)),
+          const Positioned(top:72,right:42,child:_SkillNode(label:'FLUTTER',icon:Icons.phone_android_rounded)),
+          const Positioned(bottom:62,left:58,child:_SkillNode(label:'AI',icon:Icons.auto_awesome_rounded)),
+          const Positioned(bottom:48,right:52,child:_SkillNode(label:'UX',icon:Icons.draw_outlined)),
+        ]),
+      ),
     );
 
     return mobile
@@ -338,7 +459,8 @@ class _TrainingCard extends StatelessWidget{
 }
 
 class _Projects extends StatefulWidget{
-  const _Projects();
+  final ScrollController scrollController;
+  const _Projects({required this.scrollController});
   @override State<_Projects> createState()=>_ProjectsState();
 }
 
@@ -366,7 +488,24 @@ class _ProjectsState extends State<_Projects>{
       const SizedBox(height:30),
       LayoutBuilder(builder:(c,x){
         final w=x.maxWidth<700?x.maxWidth:(x.maxWidth-20)/2;
-        return Wrap(spacing:20,runSpacing:20,children:shown.map((p)=>SizedBox(width:w,child:_ProjectCard(p))).toList());
+        return Wrap(
+          spacing:20,
+          runSpacing:20,
+          children:shown.asMap().entries.map((entry){
+            final stagger=(entry.key%4)*70;
+            return SizedBox(
+              width:w,
+              child:_ScrollReveal(
+                key:ValueKey('${filter}_${entry.value.title}'),
+                controller:widget.scrollController,
+                animation:RevealAnimation.slideUp,
+                duration:const Duration(milliseconds:460),
+                delay:Duration(milliseconds:stagger),
+                child:_ProjectCard(entry.value),
+              ),
+            );
+          }).toList(),
+        );
       }),
     ]);
   }
