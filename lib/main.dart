@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 
 void main()=>runApp(const FayPortfolio());
 
+const _cream=Color(0xFFF6F1E8);
+const _ink=Color(0xFF20251F);
+const _olive=Color(0xFF5B674F);
+const _line=Color(0xFFCFC6B8);
+const _muted=Color(0xFF67665F);
+
 class FayPortfolio extends StatelessWidget{
   const FayPortfolio({super.key});
   @override
@@ -10,8 +16,9 @@ class FayPortfolio extends StatelessWidget{
     title:'Fay Al-Mutairi | Portfolio',
     theme:ThemeData(
       useMaterial3:true,
-      scaffoldBackgroundColor:const Color(0xFFF4EFE7),
-      colorScheme:ColorScheme.fromSeed(seedColor:const Color(0xFF171717)),
+      scaffoldBackgroundColor:_cream,
+      colorScheme:ColorScheme.fromSeed(seedColor:_olive,surface:_cream),
+      textTheme:Theme.of(context).textTheme.apply(bodyColor:_ink,displayColor:_ink),
     ),
     home:const PortfolioPage(),
   );
@@ -19,17 +26,19 @@ class FayPortfolio extends StatelessWidget{
 
 class PortfolioPage extends StatefulWidget{
   const PortfolioPage({super.key});
-  @override
-  State<PortfolioPage> createState()=>_PortfolioPageState();
+  @override State<PortfolioPage> createState()=>_PortfolioPageState();
 }
 
 class _PortfolioPageState extends State<PortfolioPage>{
-  final about=GlobalKey();
-  final training=GlobalKey();
-  final projects=GlobalKey();
-  final skills=GlobalKey();
-  final contact=GlobalKey();
+  final about=GlobalKey(),training=GlobalKey(),projects=GlobalKey(),skills=GlobalKey(),contact=GlobalKey();
   final ScrollController _scrollController=ScrollController();
+  String active='About';
+
+  @override
+  void initState(){
+    super.initState();
+    _scrollController.addListener(_updateActiveSection);
+  }
 
   void go(GlobalKey key){
     final sectionContext=key.currentContext;
@@ -38,8 +47,24 @@ class _PortfolioPageState extends State<PortfolioPage>{
     }
   }
 
+  void _updateActiveSection(){
+    final entries=<String,GlobalKey>{'About':about,'Training':training,'Projects':projects,'Skills':skills,'Contact':contact};
+    String next=active;
+    var best=double.infinity;
+    for(final entry in entries.entries){
+      final context=entry.value.currentContext;
+      if(context==null)continue;
+      final box=context.findRenderObject();
+      if(box is! RenderBox||!box.attached)continue;
+      final dy=box.localToGlobal(Offset.zero).dy.abs();
+      if(dy<best){best=dy;next=entry.key;}
+    }
+    if(next!=active&&mounted)setState(()=>active=next);
+  }
+
   @override
   void dispose(){
+    _scrollController.removeListener(_updateActiveSection);
     _scrollController.dispose();
     super.dispose();
   }
@@ -53,61 +78,65 @@ class _PortfolioPageState extends State<PortfolioPage>{
         slivers:[
           SliverAppBar(
             pinned:true,
-            backgroundColor:const Color(0xFFF4EFE7),
+            backgroundColor:_cream.withOpacity(.96),
             surfaceTintColor:Colors.transparent,
-            title:const Text('FAY AL-MUTAIRI',style:TextStyle(fontWeight:FontWeight.w800,fontSize:15,letterSpacing:1.5)),
+            elevation:0,
+            title:const Row(children:[
+              Text('FA',style:TextStyle(fontFamily:'serif',fontSize:28,fontWeight:FontWeight.w500,letterSpacing:-1)),
+              SizedBox(width:14),
+              SizedBox(height:22,child:VerticalDivider(width:1,thickness:1,color:_line)),
+              SizedBox(width:14),
+              Text('FAY AL-MUTAIRI',style:TextStyle(fontWeight:FontWeight.w600,fontSize:12,letterSpacing:3.0)),
+            ]),
             actions:mobile
                 ? [
                     PopupMenuButton<String>(
-                      icon:const Icon(Icons.menu_rounded),
-                      color:const Color(0xFFF4EFE7),
+                      icon:const Icon(Icons.menu_rounded,color:_ink),
+                      color:_cream,
                       onSelected:(value){
-                        if(value=='about')go(about);
-                        if(value=='training')go(training);
-                        if(value=='projects')go(projects);
-                        if(value=='skills')go(skills);
-                        if(value=='contact')go(contact);
+                        if(value=='About')go(about);
+                        if(value=='Training')go(training);
+                        if(value=='Projects')go(projects);
+                        if(value=='Skills')go(skills);
+                        if(value=='Contact')go(contact);
                       },
                       itemBuilder:(context)=>const [
-                        PopupMenuItem(value:'about',child:Row(children:[Icon(Icons.person_outline,size:18),SizedBox(width:10),Text('About')])),
-                        PopupMenuItem(value:'training',child:Row(children:[Icon(Icons.work_outline,size:18),SizedBox(width:10),Text('Training')])),
-                        PopupMenuItem(value:'projects',child:Row(children:[Icon(Icons.grid_view_rounded,size:18),SizedBox(width:10),Text('Projects')])),
-                        PopupMenuItem(value:'skills',child:Row(children:[Icon(Icons.auto_awesome_outlined,size:18),SizedBox(width:10),Text('Skills')])),
-                        PopupMenuItem(value:'contact',child:Row(children:[Icon(Icons.mail_outline,size:18),SizedBox(width:10),Text('Contact')])),
+                        PopupMenuItem(value:'About',child:Text('About')),
+                        PopupMenuItem(value:'Training',child:Text('Training')),
+                        PopupMenuItem(value:'Projects',child:Text('Projects')),
+                        PopupMenuItem(value:'Skills',child:Text('Skills')),
+                        PopupMenuItem(value:'Contact',child:Text('Contact')),
                       ],
                     ),
                     const SizedBox(width:8),
                   ]
                 : [
-                    _Nav('About',()=>go(about)),
-                    _Nav('Training',()=>go(training)),
-                    _Nav('Projects',()=>go(projects)),
-                    _Nav('Skills',()=>go(skills)),
-                    _Nav('Contact',()=>go(contact)),
-                    const SizedBox(width:16),
+                    _Nav('About',active=='About',()=>go(about)),
+                    _Nav('Training',active=='Training',()=>go(training)),
+                    _Nav('Projects',active=='Projects',()=>go(projects)),
+                    _Nav('Skills',active=='Skills',()=>go(skills)),
+                    _Nav('Contact',active=='Contact',()=>go(contact)),
+                    const SizedBox(width:22),
                   ],
           ),
           SliverToBoxAdapter(
             child:Center(
               child:ConstrainedBox(
-                constraints:const BoxConstraints(maxWidth:1160),
+                constraints:const BoxConstraints(maxWidth:1220),
                 child:Padding(
-                  padding:const EdgeInsets.symmetric(horizontal:24),
-                  child:Column(
-                    crossAxisAlignment:CrossAxisAlignment.start,
-                    children:[
-                      const SizedBox(height:70),
-                      _Hero(onWork:()=>go(projects)),
-                      const SizedBox(height:100),
-                      _Section(key:about,n:'01',title:'About',icon:Icons.person_outline,child:_About(scrollController:_scrollController)),
-                      _Section(key:training,n:'02',title:'Training',icon:Icons.work_outline,child:_ScrollReveal(controller:_scrollController,animation:RevealAnimation.slideRight,child:const _Training())),
-                      _Section(key:projects,n:'03',title:'Projects',icon:Icons.grid_view_rounded,child:_Projects(scrollController:_scrollController)),
-                      _Section(key:skills,n:'04',title:'Skills',icon:Icons.auto_awesome_outlined,child:_ScrollReveal(controller:_scrollController,animation:RevealAnimation.scaleFade,child:const _Skills())),
-                      _Section(key:contact,n:'05',title:'Contact',icon:Icons.mail_outline,child:_ScrollReveal(controller:_scrollController,animation:RevealAnimation.slideLeft,child:const _Contact())),
-                      const Divider(),
-                      const Padding(padding:EdgeInsets.symmetric(vertical:26),child:Text('Fay Al-Mutairi  •  Information Technology  •  Saudi Arabia')),
-                    ],
-                  ),
+                  padding:EdgeInsets.symmetric(horizontal:mobile?20:28),
+                  child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                    const SizedBox(height:42),
+                    _Hero(controller:_scrollController,onWork:()=>go(projects)),
+                    const SizedBox(height:105),
+                    _Section(key:about,n:'01',title:'About',icon:Icons.person_outline,child:_About(scrollController:_scrollController)),
+                    _Section(key:training,n:'02',title:'Training',icon:Icons.work_outline,child:_ScrollReveal(controller:_scrollController,animation:RevealAnimation.slideRight,child:const _Training())),
+                    _Section(key:projects,n:'03',title:'Projects',icon:Icons.grid_view_rounded,child:_Projects(scrollController:_scrollController)),
+                    _Section(key:skills,n:'04',title:'Skills',icon:Icons.auto_awesome_outlined,child:_ScrollReveal(controller:_scrollController,animation:RevealAnimation.scaleFade,child:const _Skills())),
+                    _Section(key:contact,n:'05',title:'Contact',icon:Icons.mail_outline,child:_ScrollReveal(controller:_scrollController,animation:RevealAnimation.slideLeft,child:const _Contact())),
+                    const Divider(color:_line),
+                    const Padding(padding:EdgeInsets.symmetric(vertical:26),child:Text('Fay Al-Mutairi  •  Information Technology  •  Saudi Arabia',style:TextStyle(color:_muted))),
+                  ]),
                 ),
               ),
             ),
@@ -128,20 +157,8 @@ class _ScrollReveal extends StatefulWidget{
   final Duration delay;
   final double triggerFraction;
   final bool initiallyVisible;
-
-  const _ScrollReveal({
-    super.key,
-    required this.child,
-    required this.controller,
-    this.animation=RevealAnimation.slideUp,
-    this.duration=const Duration(milliseconds:520),
-    this.delay=Duration.zero,
-    this.triggerFraction=.9,
-    this.initiallyVisible=false,
-  });
-
-  @override
-  State<_ScrollReveal> createState()=>_ScrollRevealState();
+  const _ScrollReveal({super.key,required this.child,required this.controller,this.animation=RevealAnimation.slideUp,this.duration=const Duration(milliseconds:520),this.delay=Duration.zero,this.triggerFraction=.9,this.initiallyVisible=false});
+  @override State<_ScrollReveal> createState()=>_ScrollRevealState();
 }
 
 class _ScrollRevealState extends State<_ScrollReveal> with SingleTickerProviderStateMixin{
@@ -149,9 +166,7 @@ class _ScrollRevealState extends State<_ScrollReveal> with SingleTickerProviderS
   late Animation<double> _curve;
   bool _revealed=false;
   bool _delayScheduled=false;
-
-  @override
-  void initState(){
+  @override void initState(){
     super.initState();
     _animationController=AnimationController(vsync:this,duration:widget.duration,value:widget.initiallyVisible?1:0);
     _curve=CurvedAnimation(parent:_animationController,curve:Curves.easeOutCubic);
@@ -159,23 +174,12 @@ class _ScrollRevealState extends State<_ScrollReveal> with SingleTickerProviderS
     widget.controller.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_)=>_checkVisibility());
   }
-
-  @override
-  void didUpdateWidget(covariant _ScrollReveal oldWidget){
+  @override void didUpdateWidget(covariant _ScrollReveal oldWidget){
     super.didUpdateWidget(oldWidget);
-    if(oldWidget.controller!=widget.controller){
-      oldWidget.controller.removeListener(_handleScroll);
-      widget.controller.addListener(_handleScroll);
-    }
-    if(oldWidget.duration!=widget.duration){
-      _animationController.duration=widget.duration;
-    }
+    if(oldWidget.controller!=widget.controller){oldWidget.controller.removeListener(_handleScroll);widget.controller.addListener(_handleScroll);}
+    if(oldWidget.duration!=widget.duration)_animationController.duration=widget.duration;
   }
-
-  void _handleScroll(){
-    _checkVisibility();
-  }
-
+  void _handleScroll()=>_checkVisibility();
   void _checkVisibility(){
     if(!mounted||_revealed)return;
     final renderObject=context.findRenderObject();
@@ -186,91 +190,143 @@ class _ScrollRevealState extends State<_ScrollReveal> with SingleTickerProviderS
     final trigger=viewportHeight*widget.triggerFraction;
     if(bottom>0&&top<trigger){
       _revealed=true;
-      if(widget.delay==Duration.zero){
-        _animationController.forward();
-      }else if(!_delayScheduled){
-        _delayScheduled=true;
-        Future.delayed(widget.delay,(){
-          if(mounted)_animationController.forward();
-        });
-      }
+      if(widget.delay==Duration.zero){_animationController.forward();}
+      else if(!_delayScheduled){_delayScheduled=true;Future.delayed(widget.delay,(){if(mounted)_animationController.forward();});}
     }
   }
-
   Offset _beginOffset(){
     switch(widget.animation){
-      case RevealAnimation.slideLeft:return const Offset(-.08,0);
-      case RevealAnimation.slideRight:return const Offset(.08,0);
-      case RevealAnimation.slideUp:return const Offset(0,.08);
+      case RevealAnimation.slideLeft:return const Offset(-.07,0);
+      case RevealAnimation.slideRight:return const Offset(.07,0);
+      case RevealAnimation.slideUp:return const Offset(0,.07);
       case RevealAnimation.fade:
       case RevealAnimation.scaleFade:return Offset.zero;
     }
   }
-
-  @override
-  void dispose(){
-    widget.controller.removeListener(_handleScroll);
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context){
+  @override void dispose(){widget.controller.removeListener(_handleScroll);_animationController.dispose();super.dispose();}
+  @override Widget build(BuildContext context){
     final beginOffset=_beginOffset();
     Widget animatedChild=widget.child;
-    if(widget.animation==RevealAnimation.scaleFade){
-      animatedChild=ScaleTransition(scale:Tween<double>(begin:.97,end:1).animate(_curve),child:animatedChild);
-    }else if(beginOffset!=Offset.zero){
-      animatedChild=SlideTransition(position:Tween<Offset>(begin:beginOffset,end:Offset.zero).animate(_curve),child:animatedChild);
-    }
+    if(widget.animation==RevealAnimation.scaleFade){animatedChild=ScaleTransition(scale:Tween<double>(begin:.975,end:1).animate(_curve),child:animatedChild);}
+    else if(beginOffset!=Offset.zero){animatedChild=SlideTransition(position:Tween<Offset>(begin:beginOffset,end:Offset.zero).animate(_curve),child:animatedChild);}
     return FadeTransition(opacity:_curve,child:animatedChild);
   }
 }
 
-class _Nav extends StatelessWidget{
+class _Nav extends StatefulWidget{
   final String text;
+  final bool active;
   final VoidCallback onPressed;
-  const _Nav(this.text,this.onPressed);
-  @override
-  Widget build(BuildContext context)=>TextButton(onPressed:onPressed,child:Text(text,style:const TextStyle(color:Color(0xFF171717),fontWeight:FontWeight.w600)));
+  const _Nav(this.text,this.active,this.onPressed);
+  @override State<_Nav> createState()=>_NavState();
+}
+class _NavState extends State<_Nav>{
+  bool hover=false;
+  @override Widget build(BuildContext context)=>MouseRegion(
+    onEnter:(_)=>setState(()=>hover=true),onExit:(_)=>setState(()=>hover=false),
+    child:TextButton(
+      onPressed:widget.onPressed,
+      style:TextButton.styleFrom(foregroundColor:_ink,padding:const EdgeInsets.symmetric(horizontal:14,vertical:16)),
+      child:Column(mainAxisSize:MainAxisSize.min,children:[
+        AnimatedOpacity(duration:const Duration(milliseconds:180),opacity:hover||widget.active?1:.78,child:Text(widget.text,style:const TextStyle(fontSize:14,fontWeight:FontWeight.w500))),
+        const SizedBox(height:5),
+        AnimatedContainer(duration:const Duration(milliseconds:180),height:1.5,width:hover||widget.active?30:0,color:_olive),
+      ]),
+    ),
+  );
 }
 
-class _Hero extends StatelessWidget{
+class _Hero extends StatefulWidget{
   final VoidCallback onWork;
-  const _Hero({required this.onWork});
-  @override
-  Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){
-    final stacked=constraints.maxWidth<780;
-    final text=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-      const Row(children:[Icon(Icons.code_rounded,size:16),SizedBox(width:8),Text('INFORMATION TECHNOLOGY',style:TextStyle(fontSize:12,fontWeight:FontWeight.w700,letterSpacing:2.2))]),
-      const SizedBox(height:18),
-      FittedBox(fit:BoxFit.scaleDown,alignment:Alignment.centerLeft,child:Text('Fay Al-Mutairi',maxLines:1,style:TextStyle(fontSize:stacked?54:76,height:.98,fontWeight:FontWeight.w900,letterSpacing:-2.2))),
-      const SizedBox(height:24),
-      const Text('IT graduate focused on data analytics, Flutter development and practical AI. My work combines hands-on training with projects built around real interfaces, datasets, APIs and software solutions.',style:TextStyle(fontSize:18,height:1.6,color:Color(0xFF504A43))),
-      const SizedBox(height:28),
-      FilledButton.icon(onPressed:onWork,icon:const Icon(Icons.arrow_downward_rounded,size:18),label:const Text('View my work'),style:FilledButton.styleFrom(backgroundColor:const Color(0xFF171717),padding:const EdgeInsets.symmetric(horizontal:24,vertical:17),shape:const RoundedRectangleBorder())),
-    ]);
-    final image=Container(height:stacked?350:480,decoration:BoxDecoration(border:Border.all(color:const Color(0xFF171717))),child:Image.asset('assets/IMG_6645.PNG',fit:BoxFit.cover));
-    return stacked?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:38),image]):Row(children:[Expanded(flex:6,child:text),const SizedBox(width:55),Expanded(flex:4,child:image)]);
+  final ScrollController controller;
+  const _Hero({required this.onWork,required this.controller});
+  @override State<_Hero> createState()=>_HeroState();
+}
+
+class _HeroState extends State<_Hero>{
+  double scrollY=0;
+  @override void initState(){super.initState();widget.controller.addListener(_onScroll);}
+  @override void didUpdateWidget(covariant _Hero oldWidget){super.didUpdateWidget(oldWidget);if(oldWidget.controller!=widget.controller){oldWidget.controller.removeListener(_onScroll);widget.controller.addListener(_onScroll);}}
+  void _onScroll(){if(!mounted)return;final next=widget.controller.hasClients?widget.controller.offset.clamp(0,220).toDouble():0;if((next-scrollY).abs()>8)setState(()=>scrollY=next);}
+  @override void dispose(){widget.controller.removeListener(_onScroll);super.dispose();}
+
+  @override Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){
+    final mobile=constraints.maxWidth<780;
+    final copy=_HeroCopy(onWork:widget.onWork,mobile:mobile);
+    final visual=Transform.translate(offset:Offset(0,-scrollY*.05),child:_HeroVisual(mobile:mobile));
+    return SizedBox(
+      width:double.infinity,
+      child:Stack(children:[
+        if(!mobile)...[
+          Positioned(left:0,top:58,bottom:34,child:Container(width:1,color:_line)),
+          Positioned(left:-42,bottom:4,child:Opacity(opacity:.22,child:Icon(Icons.eco_outlined,size:165,color:_olive))),
+        ],
+        Padding(
+          padding:EdgeInsets.only(left:mobile?0:54),
+          child:mobile
+              ? Column(crossAxisAlignment:CrossAxisAlignment.start,children:[copy,const SizedBox(height:36),visual])
+              : Row(crossAxisAlignment:CrossAxisAlignment.center,children:[Expanded(flex:6,child:copy),const SizedBox(width:42),Expanded(flex:5,child:visual)]),
+        ),
+      ]),
+    );
   });
 }
 
+class _HeroCopy extends StatelessWidget{
+  final VoidCallback onWork;
+  final bool mobile;
+  const _HeroCopy({required this.onWork,required this.mobile});
+  @override Widget build(BuildContext context)=>Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+    const Row(children:[Icon(Icons.code_rounded,size:15,color:_olive),SizedBox(width:9),Text('INFORMATION TECHNOLOGY',style:TextStyle(fontSize:11.5,fontWeight:FontWeight.w700,letterSpacing:2.8,color:_olive))]),
+    const SizedBox(height:26),
+    Text('Fay Al-Mutairi',maxLines:2,style:TextStyle(fontFamily:'serif',fontSize:mobile?58:82,height:.95,fontWeight:FontWeight.w500,letterSpacing:-2.5,color:_ink)),
+    const SizedBox(height:28),
+    ConstrainedBox(constraints:const BoxConstraints(maxWidth:590),child:const Text('IT graduate focused on data analytics, Flutter development and practical AI. My work combines hands-on training with projects built around real interfaces, datasets, APIs and software solutions.',style:TextStyle(fontSize:18,height:1.7,color:_muted))),
+    const SizedBox(height:30),
+    _HeroButton(onPressed:onWork),
+  ]);
+}
+
+class _HeroButton extends StatefulWidget{final VoidCallback onPressed;const _HeroButton({required this.onPressed});@override State<_HeroButton> createState()=>_HeroButtonState();}
+class _HeroButtonState extends State<_HeroButton>{bool hover=false;@override Widget build(BuildContext context)=>MouseRegion(onEnter:(_)=>setState(()=>hover=true),onExit:(_)=>setState(()=>hover=false),child:FilledButton(onPressed:widget.onPressed,style:FilledButton.styleFrom(backgroundColor:_olive,foregroundColor:Colors.white,padding:const EdgeInsets.symmetric(horizontal:28,vertical:18),shape:RoundedRectangleBorder(borderRadius:BorderRadius.circular(30))),child:Row(mainAxisSize:MainAxisSize.min,children:[const Text('View my work',style:TextStyle(fontWeight:FontWeight.w600)),const SizedBox(width:12),AnimatedSlide(duration:const Duration(milliseconds:180),offset:hover?const Offset(.16,0):Offset.zero,child:const Icon(Icons.arrow_forward_rounded,size:18))])));}
+
+class _HeroVisual extends StatelessWidget{
+  final bool mobile;
+  const _HeroVisual({required this.mobile});
+  @override Widget build(BuildContext context){
+    final h=mobile?510.0:570.0;
+    return SizedBox(
+      height:h,
+      child:Stack(clipBehavior:Clip.none,children:[
+        Positioned(left:mobile?36:54,top:mobile?52:42,right:mobile?22:10,bottom:mobile?20:12,child:Container(decoration:BoxDecoration(color:const Color(0xFFE2E2D4),borderRadius:BorderRadius.only(topLeft:Radius.circular(mobile?150:210),topRight:Radius.circular(mobile?150:210))),)),
+        Positioned(left:mobile?12:8,top:mobile?96:84,right:mobile?60:44,bottom:mobile?24:18,child:Container(decoration:BoxDecoration(border:Border.all(color:_line),borderRadius:BorderRadius.only(topLeft:Radius.circular(mobile?130:190),topRight:Radius.circular(mobile?130:190))),padding:const EdgeInsets.all(14),child:ClipRRect(borderRadius:BorderRadius.only(topLeft:Radius.circular(mobile?118:178),topRight:Radius.circular(mobile?118:178)),child:ColorFiltered(colorFilter:const ColorFilter.mode(Color(0x22A6A58F),BlendMode.multiply),child:Image.asset('assets/IMG_6645.PNG',fit:BoxFit.cover,alignment:Alignment.topCenter))))),
+        Positioned(left:mobile?6:-6,top:mobile?54:70,child:const _TechCard(icon:Icons.bar_chart_rounded,label:'Power BI',delay:0)),
+        Positioned(right:mobile?4:-12,top:mobile?22:24,child:const _TechCard(icon:Icons.data_object_rounded,label:'Python',delay:1)),
+        Positioned(left:mobile?18:22,top:mobile?210:252,child:const _TechCard(icon:Icons.storage_rounded,label:'SQL',delay:2)),
+        Positioned(right:mobile?0:-18,top:mobile?168:166,child:const _TechCard(icon:Icons.phone_android_rounded,label:'Flutter',delay:3)),
+        Positioned(right:mobile?14:8,bottom:mobile?54:72,child:const _TechCard(icon:Icons.table_chart_outlined,label:'Excel',delay:4)),
+        Positioned(left:mobile?22:34,bottom:mobile?8:-4,child:Container(width:mobile?190:210,padding:const EdgeInsets.all(18),decoration:BoxDecoration(color:const Color(0xFFF8F5EF),border:Border.all(color:_line),borderRadius:BorderRadius.circular(18)),child:const Row(children:[Expanded(child:Text('Turn data\ninto insights',style:TextStyle(fontSize:13,height:1.35,color:_ink))),Icon(Icons.arrow_forward_rounded,size:18,color:_olive)]))),
+      ]),
+    );
+  }
+}
+
+class _TechCard extends StatefulWidget{
+  final IconData icon;final String label;final int delay;
+  const _TechCard({required this.icon,required this.label,required this.delay});
+  @override State<_TechCard> createState()=>_TechCardState();
+}
+class _TechCardState extends State<_TechCard>{bool hover=false;@override Widget build(BuildContext context)=>MouseRegion(onEnter:(_)=>setState(()=>hover=true),onExit:(_)=>setState(()=>hover=false),child:AnimatedContainer(duration:const Duration(milliseconds:200),transform:Matrix4.translationValues(0,hover?-5:0,0),padding:const EdgeInsets.symmetric(horizontal:16,vertical:13),decoration:BoxDecoration(color:const Color(0xFFF8F5EF),border:Border.all(color:_line),borderRadius:BorderRadius.circular(16),boxShadow:hover?const [BoxShadow(color:Color(0x16000000),blurRadius:18,offset:Offset(0,8))]:const []),child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(widget.icon,size:20,color:_olive),const SizedBox(width:10),Text(widget.label,style:const TextStyle(fontSize:13,fontWeight:FontWeight.w600,color:_ink))])));}
+
 class _Section extends StatelessWidget{
-  final String n,title;
-  final IconData icon;
-  final Widget child;
+  final String n,title;final IconData icon;final Widget child;
   const _Section({super.key,required this.n,required this.title,required this.icon,required this.child});
-  @override
-  Widget build(BuildContext context)=>Padding(
+  @override Widget build(BuildContext context)=>Padding(
     padding:const EdgeInsets.only(bottom:95),
     child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-      const Divider(),
+      const Divider(color:_line),
       const SizedBox(height:16),
-      Row(children:[
-        Container(width:42,height:42,decoration:BoxDecoration(color:const Color(0xFF171717),borderRadius:BorderRadius.circular(12)),child:Icon(icon,color:Colors.white,size:21)),
-        const SizedBox(width:14),
-        Text('$n   $title',style:const TextStyle(fontSize:34,fontWeight:FontWeight.w900,letterSpacing:-1)),
-      ]),
+      Row(children:[Container(width:40,height:40,decoration:BoxDecoration(border:Border.all(color:_line),shape:BoxShape.circle),child:Icon(icon,color:_olive,size:19)),const SizedBox(width:14),Text('$n   $title',style:const TextStyle(fontSize:32,fontWeight:FontWeight.w800,letterSpacing:-.8))]),
       const SizedBox(height:38),
       child,
     ]),
@@ -280,149 +336,31 @@ class _Section extends StatelessWidget{
 class _About extends StatelessWidget{
   final ScrollController scrollController;
   const _About({required this.scrollController});
-  @override
-  Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){
+  @override Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){
     final mobile=constraints.maxWidth<760;
     final story=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-      Text('I like turning ideas into clear, useful digital experiences.',style:TextStyle(fontSize:mobile?32:46,height:1.08,fontWeight:FontWeight.w900,letterSpacing:-1.2)),
+      Text('I like turning ideas into clear, useful digital experiences.',style:TextStyle(fontFamily:'serif',fontSize:mobile?34:48,height:1.05,fontWeight:FontWeight.w500,letterSpacing:-1.4)),
       const SizedBox(height:22),
-      const Text('I am an Information Technology graduate from Qassim University. My work sits between data, product thinking and development — from dashboards and data cleaning to Flutter applications, APIs, Firebase and practical AI.',style:TextStyle(fontSize:18,height:1.7,color:Color(0xFF4E4943))),
+      const Text('I am an Information Technology graduate from Qassim University. My work sits between data, product thinking and development — from dashboards and data cleaning to Flutter applications, APIs, Firebase and practical AI.',style:TextStyle(fontSize:18,height:1.7,color:_muted)),
       const SizedBox(height:18),
-      const Text('What matters to me is not just making something work, but making it understandable, organized and pleasant to use.',style:TextStyle(fontSize:18,height:1.7,color:Color(0xFF4E4943))),
+      const Text('What matters to me is not just making something work, but making it understandable, organized and pleasant to use.',style:TextStyle(fontSize:18,height:1.7,color:_muted)),
       const SizedBox(height:28),
-      _ScrollReveal(
-        controller:scrollController,
-        animation:RevealAnimation.slideUp,
-        duration:const Duration(milliseconds:420),
-        child:const Wrap(spacing:10,runSpacing:10,children:[
-          _AboutPill(Icons.insights_outlined,'Data Analytics'),
-          _AboutPill(Icons.phone_iphone_rounded,'Flutter'),
-          _AboutPill(Icons.memory_outlined,'Practical AI'),
-          _AboutPill(Icons.design_services_outlined,'UI thinking'),
-        ]),
-      ),
+      _ScrollReveal(controller:scrollController,animation:RevealAnimation.slideUp,duration:const Duration(milliseconds:420),child:const Wrap(spacing:10,runSpacing:10,children:[_AboutPill(Icons.insights_outlined,'Data Analytics'),_AboutPill(Icons.phone_iphone_rounded,'Flutter'),_AboutPill(Icons.memory_outlined,'Practical AI'),_AboutPill(Icons.design_services_outlined,'UI thinking')])),
     ]);
-
-    final visual=_ScrollReveal(
-      controller:scrollController,
-      animation:RevealAnimation.scaleFade,
-      duration:const Duration(milliseconds:500),
-      child:Container(
-        height:mobile?330:430,
-        decoration:BoxDecoration(color:const Color(0xFF171717),borderRadius:BorderRadius.circular(26)),
-        child:Stack(children:[
-          Positioned.fill(child:CustomPaint(painter:_OrbitPainter())),
-          const Align(alignment:Alignment.center,child:_CoreNode()),
-          const Positioned(top:52,left:48,child:_SkillNode(label:'DATA',icon:Icons.bar_chart_rounded)),
-          const Positioned(top:72,right:42,child:_SkillNode(label:'FLUTTER',icon:Icons.phone_android_rounded)),
-          const Positioned(bottom:62,left:58,child:_SkillNode(label:'AI',icon:Icons.auto_awesome_rounded)),
-          const Positioned(bottom:48,right:52,child:_SkillNode(label:'UX',icon:Icons.draw_outlined)),
-        ]),
-      ),
-    );
-
+    final visual=_ScrollReveal(controller:scrollController,animation:RevealAnimation.scaleFade,duration:const Duration(milliseconds:500),child:Container(height:mobile?320:400,decoration:BoxDecoration(color:_ink,borderRadius:BorderRadius.circular(18)),child:Stack(children:[Positioned.fill(child:CustomPaint(painter:_OrbitPainter())),const Align(alignment:Alignment.center,child:_CoreNode()),const Positioned(top:46,left:42,child:_SkillNode(label:'DATA',icon:Icons.bar_chart_rounded)),const Positioned(top:64,right:38,child:_SkillNode(label:'FLUTTER',icon:Icons.phone_android_rounded)),const Positioned(bottom:54,left:50,child:_SkillNode(label:'AI',icon:Icons.auto_awesome_rounded)),const Positioned(bottom:44,right:46,child:_SkillNode(label:'UX',icon:Icons.draw_outlined))])));
     return mobile?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[story,const SizedBox(height:30),visual]):Row(crossAxisAlignment:CrossAxisAlignment.center,children:[Expanded(flex:6,child:story),const SizedBox(width:52),Expanded(flex:5,child:visual)]);
   });
 }
 
-class _AboutPill extends StatelessWidget{
-  final IconData icon;
-  final String text;
-  const _AboutPill(this.icon,this.text);
-  @override
-  Widget build(BuildContext context)=>Container(
-    padding:const EdgeInsets.symmetric(horizontal:14,vertical:10),
-    decoration:BoxDecoration(border:Border.all(color:const Color(0xFF8E857A)),borderRadius:BorderRadius.circular(22)),
-    child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icon,size:17),const SizedBox(width:8),Text(text,style:const TextStyle(fontWeight:FontWeight.w700))]),
-  );
-}
+class _AboutPill extends StatelessWidget{final IconData icon;final String text;const _AboutPill(this.icon,this.text);@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(horizontal:14,vertical:10),decoration:BoxDecoration(border:Border.all(color:_line),borderRadius:BorderRadius.circular(22)),child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icon,size:17,color:_olive),const SizedBox(width:8),Text(text,style:const TextStyle(fontWeight:FontWeight.w700))]));}
+class _CoreNode extends StatelessWidget{const _CoreNode();@override Widget build(BuildContext context)=>Container(width:112,height:112,decoration:const BoxDecoration(shape:BoxShape.circle,color:_cream,boxShadow:[BoxShadow(color:Color(0x335B674F),blurRadius:28,spreadRadius:2)]),child:const Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(Icons.hub_outlined,size:28,color:_olive),SizedBox(height:6),Text('FAY',style:TextStyle(fontWeight:FontWeight.w900,letterSpacing:1.4))]));}
+class _SkillNode extends StatelessWidget{final String label;final IconData icon;const _SkillNode({required this.label,required this.icon});@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(horizontal:13,vertical:10),decoration:BoxDecoration(color:const Color(0xFF30352D),borderRadius:BorderRadius.circular(18),border:Border.all(color:const Color(0xFF485043))),child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icon,size:16,color:_cream),const SizedBox(width:7),Text(label,style:const TextStyle(color:_cream,fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.1))]));}
+class _OrbitPainter extends CustomPainter{ @override void paint(Canvas canvas,Size size){final p1=Paint()..color=const Color(0xFF66715E)..strokeWidth=1.1..style=PaintingStyle.stroke;final center=Offset(size.width/2,size.height/2);canvas.drawCircle(center,size.shortestSide*.28,p1);final p2=Paint()..color=const Color(0xFF3A4036)..strokeWidth=1.1..style=PaintingStyle.stroke;canvas.drawCircle(center,size.shortestSide*.39,p2);final line=Paint()..color=const Color(0xFF4C5547)..strokeWidth=1;canvas.drawLine(center,Offset(size.width*.18,size.height*.18),line);canvas.drawLine(center,Offset(size.width*.82,size.height*.22),line);canvas.drawLine(center,Offset(size.width*.2,size.height*.78),line);canvas.drawLine(center,Offset(size.width*.82,size.height*.8),line);} @override bool shouldRepaint(covariant CustomPainter oldDelegate)=>false;}
 
-class _CoreNode extends StatelessWidget{
-  const _CoreNode();
-  @override
-  Widget build(BuildContext context)=>Container(
-    width:112,
-    height:112,
-    decoration:const BoxDecoration(shape:BoxShape.circle,color:Color(0xFFF4EFE7),boxShadow:[BoxShadow(color:Color(0x558E857A),blurRadius:34,spreadRadius:2)]),
-    child:const Column(mainAxisAlignment:MainAxisAlignment.center,children:[Icon(Icons.hub_outlined,size:28),SizedBox(height:6),Text('FAY',style:TextStyle(fontWeight:FontWeight.w900,letterSpacing:1.4))]),
-  );
-}
+class _Training extends StatelessWidget{const _Training();@override Widget build(BuildContext context)=>const Column(children:[_TrainingCard(title:'Data Analysis Intern',place:'Al Qassim Municipality • Data Management & Statistics Office',period:'June – August 2025',body:'Completed an 8-week cooperative training program in a government data environment. Worked on cleaning and validating 750+ municipal records, reviewing data quality and inconsistencies, and supporting KPI reporting. Built analytical dashboards with Power BI and Excel for quarterly comparisons and clearer decision-support reporting. Internal datasets and work samples are not displayed because the training was completed within a government entity.',tags:['Power BI','Excel','Data Cleaning','Data Validation','KPI Reporting','Data Visualization'],image:'assets/projects/training.png'),_TrainingCard(title:'Application Development Intern',place:'Kharja • Startup',period:'February – May 2024',body:'Worked in application development using Flutter and Dart, with Firebase for authentication, database and backend-connected services. The training strengthened my understanding of UI/UX implementation, mobile application structure, software-development workflow and turning interface concepts into functional application screens.',tags:['Flutter','Dart','Firebase','UI/UX','Mobile Development','Git'])]);}
+class _TrainingCard extends StatelessWidget{final String title,place,period,body;final List<String> tags;final String? image;const _TrainingCard({required this.title,required this.place,required this.period,required this.body,required this.tags,this.image});@override Widget build(BuildContext context)=>Container(width:double.infinity,padding:const EdgeInsets.symmetric(vertical:30),decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:_line))),child:LayoutBuilder(builder:(context,constraints){final compact=constraints.maxWidth<760;final text=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w800)),const SizedBox(height:6),Text(place,style:const TextStyle(fontSize:16,fontWeight:FontWeight.w700)),Text(period,style:const TextStyle(color:_muted)),const SizedBox(height:16),Text(body,style:const TextStyle(fontSize:16,height:1.65,color:Color(0xFF575A54))),const SizedBox(height:16),Wrap(spacing:8,runSpacing:8,children:tags.map((e)=>_Tag(e)).toList())]);if(image==null)return text;final certificate=Container(height:compact?170:190,width:double.infinity,padding:const EdgeInsets.all(10),color:Colors.white,child:Image.asset(image!,fit:BoxFit.contain));return compact?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:20),certificate]):Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(flex:7,child:text),const SizedBox(width:28),Expanded(flex:3,child:certificate)]);}));}
 
-class _SkillNode extends StatelessWidget{
-  final String label;
-  final IconData icon;
-  const _SkillNode({required this.label,required this.icon});
-  @override
-  Widget build(BuildContext context)=>Container(
-    padding:const EdgeInsets.symmetric(horizontal:13,vertical:10),
-    decoration:BoxDecoration(color:const Color(0xFF2A2927),borderRadius:BorderRadius.circular(20),border:Border.all(color:const Color(0xFF4A4844))),
-    child:Row(mainAxisSize:MainAxisSize.min,children:[Icon(icon,size:16,color:const Color(0xFFF4EFE7)),const SizedBox(width:7),Text(label,style:const TextStyle(color:Color(0xFFF4EFE7),fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.1))]),
-  );
-}
-
-class _OrbitPainter extends CustomPainter{
-  @override
-  void paint(Canvas canvas,Size size){
-    final primary=Paint()..color=const Color(0xFF5A5651)..strokeWidth=1.2..style=PaintingStyle.stroke;
-    final center=Offset(size.width/2,size.height/2);
-    canvas.drawCircle(center,size.shortestSide*.28,primary);
-    final secondary=Paint()..color=const Color(0xFF343230)..strokeWidth=1.2..style=PaintingStyle.stroke;
-    canvas.drawCircle(center,size.shortestSide*.39,secondary);
-    final line=Paint()..color=const Color(0xFF4A4742)..strokeWidth=1;
-    canvas.drawLine(center,Offset(size.width*.18,size.height*.18),line);
-    canvas.drawLine(center,Offset(size.width*.82,size.height*.22),line);
-    canvas.drawLine(center,Offset(size.width*.2,size.height*.78),line);
-    canvas.drawLine(center,Offset(size.width*.82,size.height*.8),line);
-  }
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate)=>false;
-}
-
-class _Training extends StatelessWidget{
-  const _Training();
-  @override
-  Widget build(BuildContext context)=>const Column(children:[
-    _TrainingCard(title:'Data Analysis Intern',place:'Al Qassim Municipality • Data Management & Statistics Office',period:'June – August 2025',body:'Completed an 8-week cooperative training program in a government data environment. Worked on cleaning and validating 750+ municipal records, reviewing data quality and inconsistencies, and supporting KPI reporting. Built analytical dashboards with Power BI and Excel for quarterly comparisons and clearer decision-support reporting. Internal datasets and work samples are not displayed because the training was completed within a government entity.',tags:['Power BI','Excel','Data Cleaning','Data Validation','KPI Reporting','Data Visualization'],image:'assets/projects/training.png'),
-    _TrainingCard(title:'Application Development Intern',place:'Kharja • Startup',period:'February – May 2024',body:'Worked in application development using Flutter and Dart, with Firebase for authentication, database and backend-connected services. The training strengthened my understanding of UI/UX implementation, mobile application structure, software-development workflow and turning interface concepts into functional application screens.',tags:['Flutter','Dart','Firebase','UI/UX','Mobile Development','Git']),
-  ]);
-}
-
-class _TrainingCard extends StatelessWidget{
-  final String title,place,period,body;
-  final List<String> tags;
-  final String? image;
-  const _TrainingCard({required this.title,required this.place,required this.period,required this.body,required this.tags,this.image});
-  @override
-  Widget build(BuildContext context)=>Container(
-    width:double.infinity,
-    padding:const EdgeInsets.symmetric(vertical:30),
-    decoration:const BoxDecoration(border:Border(bottom:BorderSide(color:Color(0xFFBDB4A8)))),
-    child:LayoutBuilder(builder:(context,constraints){
-      final compact=constraints.maxWidth<760;
-      final text=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-        Text(title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w800)),
-        const SizedBox(height:6),
-        Text(place,style:const TextStyle(fontSize:16,fontWeight:FontWeight.w700)),
-        Text(period,style:const TextStyle(color:Color(0xFF6C655D))),
-        const SizedBox(height:16),
-        Text(body,style:const TextStyle(fontSize:16,height:1.65,color:Color(0xFF4E4943))),
-        const SizedBox(height:16),
-        Wrap(spacing:8,runSpacing:8,children:tags.map((e)=>_Tag(e)).toList()),
-      ]);
-      if(image==null)return text;
-      final certificate=Container(height:compact?170:190,width:double.infinity,padding:const EdgeInsets.all(10),color:Colors.white,child:Image.asset(image!,fit:BoxFit.contain));
-      return compact?Column(crossAxisAlignment:CrossAxisAlignment.start,children:[text,const SizedBox(height:20),certificate]):Row(crossAxisAlignment:CrossAxisAlignment.start,children:[Expanded(flex:7,child:text),const SizedBox(width:28),Expanded(flex:3,child:certificate)]);
-    }),
-  );
-}
-
-class _Projects extends StatefulWidget{
-  final ScrollController scrollController;
-  const _Projects({required this.scrollController});
-  @override
-  State<_Projects> createState()=>_ProjectsState();
-}
-
+class _Projects extends StatefulWidget{final ScrollController scrollController;const _Projects({required this.scrollController});@override State<_Projects> createState()=>_ProjectsState();}
 class _ProjectsState extends State<_Projects>{
   String filter='All';
   static const items=[
@@ -435,279 +373,70 @@ class _ProjectsState extends State<_Projects>{
     _Project('Kharja','Flutter & Mobile','Mobile Application','A mobile application project developed around planning outings and nearby activities. The interface includes creating a new outing, adding a cover image, title and description, and selecting categories such as sports, food, music, gaming, arts and culture.',['Flutter','Mobile Development','UI/UX'],['assets/projects/kharja-1.png','assets/projects/kharja-2.png']),
     _Project('Library Database Schema','Web & Database','Database Design','A database-design project for a university library system focused on entities, relationships and organized information structure.',['Database Design','SQL','Data Modeling'],[]),
   ];
-
-  @override
-  Widget build(BuildContext context){
+  @override Widget build(BuildContext context){
     const filters=['All','Data Analytics','Flutter & Mobile','AI','Web & Database'];
     final shown=filter=='All'?items:items.where((e)=>e.category==filter).toList();
     return Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-      const Text('Browse by area. Open a project to see the full description, skills and images.',style:TextStyle(fontSize:16,height:1.6,color:Color(0xFF5A544D))),
+      const Text('Browse by area. Open a project to see the full description, skills and images.',style:TextStyle(fontSize:16,height:1.6,color:_muted)),
       const SizedBox(height:18),
-      Wrap(spacing:9,runSpacing:9,children:filters.map((e)=>ChoiceChip(label:Text(e),selected:filter==e,onSelected:(_)=>setState(()=>filter=e),selectedColor:const Color(0xFF171717),labelStyle:TextStyle(color:filter==e?Colors.white:const Color(0xFF171717)))).toList()),
+      Wrap(spacing:9,runSpacing:9,children:filters.map((e)=>ChoiceChip(label:Text(e),selected:filter==e,onSelected:(_)=>setState(()=>filter=e),selectedColor:_olive,backgroundColor:_cream,side:const BorderSide(color:_line),labelStyle:TextStyle(color:filter==e?Colors.white:_ink))).toList()),
       const SizedBox(height:30),
-      LayoutBuilder(builder:(context,constraints){
-        final width=constraints.maxWidth<700?constraints.maxWidth:(constraints.maxWidth-20)/2;
-        return Wrap(
-          spacing:20,
-          runSpacing:20,
-          children:shown.asMap().entries.map((entry){
-            final delay=Duration(milliseconds:(entry.key%4)*70);
-            return SizedBox(
-              width:width,
-              child:_ScrollReveal(
-                key:ValueKey('${filter}_${entry.value.title}'),
-                controller:widget.scrollController,
-                animation:RevealAnimation.slideUp,
-                duration:const Duration(milliseconds:460),
-                delay:delay,
-                triggerFraction:.92,
-                child:_ProjectCard(entry.value),
-              ),
-            );
-          }).toList(),
-        );
-      }),
+      LayoutBuilder(builder:(context,constraints){final width=constraints.maxWidth<700?constraints.maxWidth:(constraints.maxWidth-20)/2;return Wrap(spacing:20,runSpacing:20,children:shown.asMap().entries.map((entry){final delay=Duration(milliseconds:(entry.key%4)*70);return SizedBox(width:width,child:_ScrollReveal(key:ValueKey('${filter}_${entry.value.title}'),controller:widget.scrollController,animation:RevealAnimation.slideUp,duration:const Duration(milliseconds:460),delay:delay,triggerFraction:.92,child:_ProjectCard(entry.value)));}).toList());}),
     ]);
   }
 }
+class _Project{final String title,category,type,description;final List<String> tags,images;const _Project(this.title,this.category,this.type,this.description,this.tags,this.images);}
 
-class _Project{
-  final String title,category,type,description;
-  final List<String> tags,images;
-  const _Project(this.title,this.category,this.type,this.description,this.tags,this.images);
-}
-
-class _ProjectCard extends StatefulWidget{
-  final _Project project;
-  const _ProjectCard(this.project);
-  @override
-  State<_ProjectCard> createState()=>_ProjectCardState();
-}
-
+class _ProjectCard extends StatefulWidget{final _Project project;const _ProjectCard(this.project);@override State<_ProjectCard> createState()=>_ProjectCardState();}
 class _ProjectCardState extends State<_ProjectCard>{
   bool hovered=false;
-  @override
-  Widget build(BuildContext context){
-    final project=widget.project;
-    final cover=project.images.isNotEmpty?project.images.first:null;
+  @override Widget build(BuildContext context){
+    final project=widget.project;final cover=project.images.isNotEmpty?project.images.first:null;
     return MouseRegion(
-      onEnter:(_)=>setState(()=>hovered=true),
-      onExit:(_)=>setState(()=>hovered=false),
+      onEnter:(_)=>setState(()=>hovered=true),onExit:(_)=>setState(()=>hovered=false),
       child:AnimatedContainer(
-        duration:const Duration(milliseconds:180),
-        curve:Curves.easeOut,
-        transform:Matrix4.translationValues(0,hovered?-5:0,0),
-        decoration:BoxDecoration(boxShadow:hovered?const [BoxShadow(color:Color(0x18000000),blurRadius:22,offset:Offset(0,12))]:const []),
-        child:Material(
-          color:const Color(0xFFE9E1D6),
-          child:InkWell(
-            onTap:()=>Navigator.of(context).push(MaterialPageRoute(builder:(_)=>_ProjectDetails(project))),
-            child:Container(
-              decoration:BoxDecoration(border:Border.all(color:const Color(0xFFBDB4A8))),
-              child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                if(cover!=null)
-                  ClipRect(
-                    child:AnimatedScale(
-                      scale:hovered?1.025:1,
-                      duration:const Duration(milliseconds:220),
-                      curve:Curves.easeOut,
-                      child:Container(height:185,width:double.infinity,color:const Color(0xFFF8F5F0),padding:const EdgeInsets.all(14),child:Image.asset(cover,fit:BoxFit.contain)),
-                    ),
-                  ),
-                Padding(
-                  padding:const EdgeInsets.all(22),
-                  child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                    Row(children:[const Icon(Icons.folder_open_outlined,size:16),const SizedBox(width:7),Text(project.category.toUpperCase(),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.4))]),
-                    const SizedBox(height:12),
-                    Text(project.title,style:const TextStyle(fontSize:24,fontWeight:FontWeight.w900)),
-                    const SizedBox(height:6),
-                    Text(project.type,style:const TextStyle(color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),
-                    const SizedBox(height:16),
-                    const Row(children:[Text('View project',style:TextStyle(fontWeight:FontWeight.w700)),SizedBox(width:6),Icon(Icons.arrow_forward,size:17)]),
-                  ]),
-                ),
-              ]),
-            ),
-          ),
+        duration:const Duration(milliseconds:190),curve:Curves.easeOut,transform:Matrix4.translationValues(0,hovered?-5:0,0),
+        decoration:BoxDecoration(color:const Color(0xFFF8F5EF),border:Border.all(color:hovered?_olive:_line),boxShadow:hovered?const [BoxShadow(color:Color(0x14000000),blurRadius:24,offset:Offset(0,12))]:const []),
+        child:InkWell(
+          onTap:()=>Navigator.of(context).push(MaterialPageRoute(builder:(_)=>_ProjectDetails(project))),
+          child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+            if(cover!=null)ClipRect(child:AnimatedScale(scale:hovered?1.02:1,duration:const Duration(milliseconds:220),curve:Curves.easeOut,child:Container(height:190,width:double.infinity,color:const Color(0xFFECE8DF),padding:const EdgeInsets.all(12),child:Image.asset(cover,fit:BoxFit.contain)))),
+            Padding(padding:const EdgeInsets.fromLTRB(22,22,22,20),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+              Text(project.category.toUpperCase(),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w800,letterSpacing:1.5,color:_olive)),
+              const SizedBox(height:12),
+              Text(project.title,style:const TextStyle(fontFamily:'serif',fontSize:27,fontWeight:FontWeight.w500,letterSpacing:-.7)),
+              const SizedBox(height:6),
+              Text(project.type,style:const TextStyle(color:_muted,fontWeight:FontWeight.w600)),
+              const SizedBox(height:14),
+              Text(project.description,maxLines:3,overflow:TextOverflow.ellipsis,style:const TextStyle(fontSize:14.5,height:1.55,color:Color(0xFF5B5D58))),
+              const SizedBox(height:18),
+              Wrap(spacing:7,runSpacing:7,children:project.tags.map((e)=>_Tag(e)).toList()),
+              const SizedBox(height:18),
+              AnimatedSlide(duration:const Duration(milliseconds:180),offset:hovered?const Offset(.04,0):Offset.zero,child:const Row(mainAxisSize:MainAxisSize.min,children:[Text('View project',style:TextStyle(fontWeight:FontWeight.w700,color:_olive)),SizedBox(width:6),Icon(Icons.arrow_forward_rounded,size:17,color:_olive)])),
+            ])),
+          ]),
         ),
       ),
     );
   }
 }
 
-class _ProjectDetails extends StatefulWidget{
-  final _Project project;
-  const _ProjectDetails(this.project);
-  @override
-  State<_ProjectDetails> createState()=>_ProjectDetailsState();
-}
-
+class _ProjectDetails extends StatefulWidget{final _Project project;const _ProjectDetails(this.project);@override State<_ProjectDetails> createState()=>_ProjectDetailsState();}
 class _ProjectDetailsState extends State<_ProjectDetails>{
-  late final PageController pageController;
-  int current=0;
-  @override
-  void initState(){
-    super.initState();
-    pageController=PageController(viewportFraction:.7);
-  }
-  @override
-  void dispose(){
-    pageController.dispose();
-    super.dispose();
-  }
-  @override
-  Widget build(BuildContext context){
-    final project=widget.project;
-    final phone=project.images.length>1&&(project.title=='Anees'||project.title=='Real Estate App'||project.title=='Kharja');
-    return Scaffold(
-      backgroundColor:const Color(0xFFF4EFE7),
-      appBar:AppBar(backgroundColor:const Color(0xFFF4EFE7),surfaceTintColor:Colors.transparent,title:Text(project.title,style:const TextStyle(fontWeight:FontWeight.w800))),
-      body:SingleChildScrollView(
-        child:Center(
-          child:ConstrainedBox(
-            constraints:const BoxConstraints(maxWidth:1040),
-            child:Padding(
-              padding:const EdgeInsets.fromLTRB(24,36,24,70),
-              child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                Text(project.category.toUpperCase(),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w800,letterSpacing:1.8)),
-                const SizedBox(height:12),
-                Text(project.title,style:const TextStyle(fontSize:48,height:1,fontWeight:FontWeight.w900,letterSpacing:-1.5)),
-                const SizedBox(height:10),
-                Text(project.type,style:const TextStyle(fontSize:17,color:Color(0xFF6C655D),fontWeight:FontWeight.w700)),
-                const SizedBox(height:28),
-                Text(project.description,style:const TextStyle(fontSize:18,height:1.75,color:Color(0xFF413C36))),
-                const SizedBox(height:24),
-                Wrap(spacing:8,runSpacing:8,children:project.tags.map((e)=>_Tag(e)).toList()),
-                if(project.images.isNotEmpty)...[
-                  const SizedBox(height:42),
-                  const Divider(),
-                  const SizedBox(height:22),
-                  const Text('Project Gallery',style:TextStyle(fontSize:24,fontWeight:FontWeight.w900)),
-                  const SizedBox(height:18),
-                  phone?_PhoneCarousel(images:project.images,controller:pageController,current:current,onChanged:(index)=>setState(()=>current=index)):_DetailsGallery(project.images),
-                ],
-              ]),
-            ),
-          ),
-        ),
-      ),
-    );
+  late final PageController pageController;int current=0;
+  @override void initState(){super.initState();pageController=PageController(viewportFraction:.7);}
+  @override void dispose(){pageController.dispose();super.dispose();}
+  @override Widget build(BuildContext context){
+    final project=widget.project;final phone=project.images.length>1&&(project.title=='Anees'||project.title=='Real Estate App'||project.title=='Kharja');
+    return Scaffold(backgroundColor:_cream,appBar:AppBar(backgroundColor:_cream,surfaceTintColor:Colors.transparent,title:Text(project.title,style:const TextStyle(fontWeight:FontWeight.w800))),body:SingleChildScrollView(child:Center(child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:1040),child:Padding(padding:const EdgeInsets.fromLTRB(24,36,24,70),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(project.category.toUpperCase(),style:const TextStyle(fontSize:12,fontWeight:FontWeight.w800,letterSpacing:1.8,color:_olive)),const SizedBox(height:12),Text(project.title,style:const TextStyle(fontFamily:'serif',fontSize:50,height:1,fontWeight:FontWeight.w500,letterSpacing:-1.5)),const SizedBox(height:10),Text(project.type,style:const TextStyle(fontSize:17,color:_muted,fontWeight:FontWeight.w700)),const SizedBox(height:28),Text(project.description,style:const TextStyle(fontSize:18,height:1.75,color:Color(0xFF4B4E49))),const SizedBox(height:24),Wrap(spacing:8,runSpacing:8,children:project.tags.map((e)=>_Tag(e)).toList()),if(project.images.isNotEmpty)...[const SizedBox(height:42),const Divider(color:_line),const SizedBox(height:22),const Text('Project Gallery',style:TextStyle(fontSize:24,fontWeight:FontWeight.w900)),const SizedBox(height:18),phone?_PhoneCarousel(images:project.images,controller:pageController,current:current,onChanged:(index)=>setState(()=>current=index)):_DetailsGallery(project.images)]]))))));
   }
 }
 
-class _PhoneCarousel extends StatelessWidget{
-  final List<String> images;
-  final PageController controller;
-  final int current;
-  final ValueChanged<int> onChanged;
-  const _PhoneCarousel({required this.images,required this.controller,required this.current,required this.onChanged});
-  @override
-  Widget build(BuildContext context)=>Column(children:[
-    SizedBox(
-      height:520,
-      child:PageView.builder(
-        controller:controller,
-        itemCount:images.length,
-        onPageChanged:onChanged,
-        physics:const BouncingScrollPhysics(),
-        itemBuilder:(context,index){
-          final active=index==current;
-          return AnimatedScale(
-            scale:active?1:.88,
-            duration:const Duration(milliseconds:260),
-            curve:Curves.easeOut,
-            child:AnimatedOpacity(opacity:active?1:.55,duration:const Duration(milliseconds:260),child:Center(child:_PhoneFrame(image:images[index]))),
-          );
-        },
-      ),
-    ),
-    const SizedBox(height:14),
-    Row(mainAxisAlignment:MainAxisAlignment.center,children:List.generate(images.length,(index){
-      final active=index==current;
-      return AnimatedContainer(duration:const Duration(milliseconds:220),margin:const EdgeInsets.symmetric(horizontal:4),width:active?24:7,height:7,decoration:BoxDecoration(color:active?const Color(0xFF171717):const Color(0xFFBDB4A8),borderRadius:BorderRadius.circular(20)));
-    })),
-  ]);
-}
-
-class _PhoneFrame extends StatelessWidget{
-  final String image;
-  const _PhoneFrame({required this.image});
-  @override
-  Widget build(BuildContext context)=>Container(
-    width:245,
-    height:500,
-    padding:const EdgeInsets.all(9),
-    decoration:BoxDecoration(color:const Color(0xFF151515),borderRadius:BorderRadius.circular(34),boxShadow:const [BoxShadow(blurRadius:22,offset:Offset(0,12),color:Color(0x22000000))]),
-    child:Stack(children:[
-      ClipRRect(borderRadius:BorderRadius.circular(26),child:Container(color:Colors.white,width:double.infinity,height:double.infinity,child:Image.asset(image,fit:BoxFit.contain))),
-      Align(alignment:Alignment.topCenter,child:Container(width:78,height:18,margin:const EdgeInsets.only(top:7),decoration:BoxDecoration(color:const Color(0xFF151515),borderRadius:BorderRadius.circular(14)))),
-    ]),
-  );
-}
-
-class _DetailsGallery extends StatelessWidget{
-  final List<String> images;
-  const _DetailsGallery(this.images);
-  @override
-  Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){
-    if(images.length==1){
-      return Center(child:ConstrainedBox(constraints:const BoxConstraints(maxHeight:520,maxWidth:900),child:Container(width:double.infinity,padding:const EdgeInsets.all(16),color:Colors.white,child:Image.asset(images.first,fit:BoxFit.contain))));
-    }
-    final mobile=constraints.maxWidth<700;
-    final width=mobile?constraints.maxWidth:(constraints.maxWidth-16)/2;
-    return Wrap(spacing:16,runSpacing:16,children:images.map((image)=>Container(width:width,height:300,padding:const EdgeInsets.all(14),color:Colors.white,child:Image.asset(image,fit:BoxFit.contain))).toList());
-  });
-}
-
-class _Tag extends StatelessWidget{
-  final String text;
-  const _Tag(this.text);
-  @override
-  Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(horizontal:10,vertical:6),decoration:BoxDecoration(border:Border.all(color:const Color(0xFF8E857A))),child:Text(text,style:const TextStyle(fontSize:12,fontWeight:FontWeight.w600)));
-}
-
-class _Skills extends StatelessWidget{
-  const _Skills();
-  @override
-  Widget build(BuildContext context)=>const Wrap(spacing:45,runSpacing:35,children:[
-    _Skill('Data Analytics',['Power BI','Tableau','Excel','Python','SQL','Data Cleaning','KPI Reporting'],Icons.insights_outlined),
-    _Skill('Development',['Flutter','Flutter Web','Dart','Firebase','Git','APIs'],Icons.devices_outlined),
-    _Skill('AI & Database',['Machine Learning','Deep Learning','Emotion Recognition','Database Design','Data Modeling'],Icons.memory_outlined),
-  ]);
-}
-
-class _Skill extends StatelessWidget{
-  final String title;
-  final List<String> items;
-  final IconData icon;
-  const _Skill(this.title,this.items,this.icon);
-  @override
-  Widget build(BuildContext context)=>SizedBox(width:300,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-    Container(width:40,height:40,decoration:BoxDecoration(border:Border.all(color:const Color(0xFF171717)),borderRadius:BorderRadius.circular(10)),child:Icon(icon,size:20)),
-    const SizedBox(height:14),
-    Text(title,style:const TextStyle(fontSize:20,fontWeight:FontWeight.w800)),
-    const SizedBox(height:12),
-    Text(items.join('  •  '),style:const TextStyle(fontSize:15,height:1.8,color:Color(0xFF4E4943))),
-  ]));
-}
-
-class _Contact extends StatelessWidget{
-  const _Contact();
-  @override
-  Widget build(BuildContext context)=>const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-    Text('Open to opportunities in data analytics, application development and practical technology projects.',style:TextStyle(fontSize:25,height:1.45,fontWeight:FontWeight.w800)),
-    SizedBox(height:28),
-    _ContactLine(Icons.phone_outlined,'Phone','0530460609'),
-    _ContactLine(Icons.mail_outline,'Email','fayalmtuairi@gmail.com'),
-    _ContactLine(Icons.code_outlined,'GitHub','github.com/FayAL-mtuairi'),
-    _ContactLine(Icons.link_outlined,'LinkedIn','linkedin.com/in/fay-al-mutairi-834a4a246'),
-  ]);
-}
-
-class _ContactLine extends StatelessWidget{
-  final IconData icon;
-  final String label,value;
-  const _ContactLine(this.icon,this.label,this.value);
-  @override
-  Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.symmetric(vertical:9),child:Wrap(crossAxisAlignment:WrapCrossAlignment.center,spacing:12,children:[Icon(icon,size:18),SizedBox(width:85,child:Text(label,style:const TextStyle(fontWeight:FontWeight.w800))),SelectableText(value)]));
-}
+class _PhoneCarousel extends StatelessWidget{final List<String> images;final PageController controller;final int current;final ValueChanged<int> onChanged;const _PhoneCarousel({required this.images,required this.controller,required this.current,required this.onChanged});@override Widget build(BuildContext context)=>Column(children:[SizedBox(height:520,child:PageView.builder(controller:controller,itemCount:images.length,onPageChanged:onChanged,physics:const BouncingScrollPhysics(),itemBuilder:(context,index){final active=index==current;return AnimatedScale(scale:active?1:.88,duration:const Duration(milliseconds:260),curve:Curves.easeOut,child:AnimatedOpacity(opacity:active?1:.55,duration:const Duration(milliseconds:260),child:Center(child:_PhoneFrame(image:images[index]))));})),const SizedBox(height:14),Row(mainAxisAlignment:MainAxisAlignment.center,children:List.generate(images.length,(index){final active=index==current;return AnimatedContainer(duration:const Duration(milliseconds:220),margin:const EdgeInsets.symmetric(horizontal:4),width:active?24:7,height:7,decoration:BoxDecoration(color:active?_olive:_line,borderRadius:BorderRadius.circular(20)));}))]);}
+class _PhoneFrame extends StatelessWidget{final String image;const _PhoneFrame({required this.image});@override Widget build(BuildContext context)=>Container(width:245,height:500,padding:const EdgeInsets.all(9),decoration:BoxDecoration(color:const Color(0xFF151515),borderRadius:BorderRadius.circular(34),boxShadow:const [BoxShadow(blurRadius:22,offset:Offset(0,12),color:Color(0x22000000))]),child:Stack(children:[ClipRRect(borderRadius:BorderRadius.circular(26),child:Container(color:Colors.white,width:double.infinity,height:double.infinity,child:Image.asset(image,fit:BoxFit.contain))),Align(alignment:Alignment.topCenter,child:Container(width:78,height:18,margin:const EdgeInsets.only(top:7),decoration:BoxDecoration(color:const Color(0xFF151515),borderRadius:BorderRadius.circular(14))))]));}
+class _DetailsGallery extends StatelessWidget{final List<String> images;const _DetailsGallery(this.images);@override Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){if(images.length==1)return Center(child:ConstrainedBox(constraints:const BoxConstraints(maxHeight:520,maxWidth:900),child:Container(width:double.infinity,padding:const EdgeInsets.all(16),color:Colors.white,child:Image.asset(images.first,fit:BoxFit.contain))));final mobile=constraints.maxWidth<700;final width=mobile?constraints.maxWidth:(constraints.maxWidth-16)/2;return Wrap(spacing:16,runSpacing:16,children:images.map((image)=>Container(width:width,height:300,padding:const EdgeInsets.all(14),color:Colors.white,child:Image.asset(image,fit:BoxFit.contain))).toList());});}
+class _Tag extends StatelessWidget{final String text;const _Tag(this.text);@override Widget build(BuildContext context)=>Container(padding:const EdgeInsets.symmetric(horizontal:10,vertical:6),decoration:BoxDecoration(border:Border.all(color:_line)),child:Text(text,style:const TextStyle(fontSize:12,fontWeight:FontWeight.w600,color:_ink)));}
+class _Skills extends StatelessWidget{const _Skills();@override Widget build(BuildContext context)=>const Wrap(spacing:45,runSpacing:35,children:[_Skill('Data Analytics',['Power BI','Tableau','Excel','Python','SQL','Data Cleaning','KPI Reporting'],Icons.insights_outlined),_Skill('Development',['Flutter','Flutter Web','Dart','Firebase','Git','APIs'],Icons.devices_outlined),_Skill('AI & Database',['Machine Learning','Deep Learning','Emotion Recognition','Database Design','Data Modeling'],Icons.memory_outlined)]);}
+class _Skill extends StatelessWidget{final String title;final List<String> items;final IconData icon;const _Skill(this.title,this.items,this.icon);@override Widget build(BuildContext context)=>SizedBox(width:300,child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Container(width:40,height:40,decoration:BoxDecoration(border:Border.all(color:_line),shape:BoxShape.circle),child:Icon(icon,size:20,color:_olive)),const SizedBox(height:14),Text(title,style:const TextStyle(fontSize:20,fontWeight:FontWeight.w800)),const SizedBox(height:12),Text(items.join('  •  '),style:const TextStyle(fontSize:15,height:1.8,color:_muted))]));}
+class _Contact extends StatelessWidget{const _Contact();@override Widget build(BuildContext context)=>const Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('Open to opportunities in data analytics, application development and practical technology projects.',style:TextStyle(fontFamily:'serif',fontSize:29,height:1.35,fontWeight:FontWeight.w500)),SizedBox(height:28),_ContactLine(Icons.phone_outlined,'Phone','0530460609'),_ContactLine(Icons.mail_outline,'Email','fayalmtuairi@gmail.com'),_ContactLine(Icons.code_outlined,'GitHub','github.com/FayAL-mtuairi'),_ContactLine(Icons.link_outlined,'LinkedIn','linkedin.com/in/fay-al-mutairi-834a4a246')]);}
+class _ContactLine extends StatelessWidget{final IconData icon;final String label,value;const _ContactLine(this.icon,this.label,this.value);@override Widget build(BuildContext context)=>Padding(padding:const EdgeInsets.symmetric(vertical:9),child:Wrap(crossAxisAlignment:WrapCrossAlignment.center,spacing:12,children:[Icon(icon,size:18,color:_olive),SizedBox(width:85,child:Text(label,style:const TextStyle(fontWeight:FontWeight.w800))),SelectableText(value)]));}
