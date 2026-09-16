@@ -257,7 +257,7 @@ class _HeroState extends State<_Hero>{
   @override Widget build(BuildContext context)=>LayoutBuilder(builder:(context,constraints){
     final mobile=constraints.maxWidth<780;
     final copy=_HeroCopy(onWork:widget.onWork,mobile:mobile);
-    final visual=Transform.translate(offset:Offset(0,-scrollY*.045),child:_HeroVisual(mobile:mobile));
+    final visual=Transform.translate(offset:Offset(0,-scrollY*.03),child:_HeroVisual(mobile:mobile));
     final core=mobile
         ? Column(crossAxisAlignment:CrossAxisAlignment.start,children:[copy,const SizedBox(height:34),visual,const SizedBox(height:18),const Align(alignment:Alignment.center,child:_ScrollHint(compact:true))])
         : Row(crossAxisAlignment:CrossAxisAlignment.center,children:[
@@ -272,7 +272,7 @@ class _HeroState extends State<_Hero>{
         children:[
           if(!mobile)...[
             const Positioned(left:0,top:36,bottom:42,child:_HeroRail()),
-            Positioned(right:0,bottom:4,child:Transform.translate(offset:Offset(0,-scrollY*.025),child:const _ScrollHint())),
+            Positioned(right:0,bottom:4,child:Transform.translate(offset:Offset(0,-scrollY*.02),child:const _ScrollHint())),
           ],
           Padding(
             padding:EdgeInsets.only(left:mobile?0:58,right:mobile?0:54),
@@ -312,7 +312,7 @@ class _HeroRail extends StatelessWidget{
         const SizedBox(height:7),
         Container(width:16,height:1,color:_line),
         const SizedBox(height:7),
-        const Text('04',style:TextStyle(fontSize:11,color:_muted,fontWeight:FontWeight.w600)),
+        const Text('05',style:TextStyle(fontSize:11,color:_muted,fontWeight:FontWeight.w600)),
       ],
     ),
   );
@@ -370,51 +370,13 @@ class _HeroVisual extends StatelessWidget{
       child:Stack(
         clipBehavior:Clip.none,
         children:[
-          Positioned(
-            left:mobile?34:52,
-            top:mobile?34:28,
-            right:mobile?28:28,
-            bottom:mobile?24:18,
-            child:Container(
-              decoration:BoxDecoration(
-                color:const Color(0xFFE4E5D8),
-                borderRadius:BorderRadius.only(
-                  topLeft:Radius.circular(mobile?145:205),
-                  topRight:Radius.circular(mobile?145:205),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left:mobile?20:28,
-            top:mobile?54:44,
-            right:mobile?42:48,
-            bottom:mobile?30:24,
-            child:Container(
-              decoration:BoxDecoration(
-                border:Border.all(color:_line),
-                borderRadius:BorderRadius.only(
-                  topLeft:Radius.circular(mobile?132:190),
-                  topRight:Radius.circular(mobile?132:190),
-                ),
-              ),
-              padding:const EdgeInsets.all(12),
-              child:ClipRRect(
-                borderRadius:BorderRadius.only(
-                  topLeft:Radius.circular(mobile?120:178),
-                  topRight:Radius.circular(mobile?120:178),
-                ),
-                child:ColoredBox(
-                  color:const Color(0xFFE9E6DC),
-                  child:ColorFiltered(
-                    colorFilter:const ColorFilter.mode(Color(0x159A9A83),BlendMode.multiply),
-                    child:Image.asset(
-                      'assets/IMG_6645.PNG',
-                      fit:BoxFit.contain,
-                      alignment:Alignment.center,
-                    ),
-                  ),
-                ),
+          Positioned.fill(
+            child:ClipRRect(
+              borderRadius:BorderRadius.circular(mobile?24:30),
+              child:Image.asset(
+                'assets/projects/Home.png',
+                fit:BoxFit.contain,
+                alignment:Alignment.center,
               ),
             ),
           ),
